@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 
 export interface Card {
@@ -59,6 +58,17 @@ export const useCards = () => {
     setCards(prev => prev.filter(card => card.id !== id));
   };
 
+  const resetProgress = () => {
+    const now = new Date();
+    setCards(prev => prev.map(card => ({
+      ...card,
+      difficulty: 0,
+      lastReviewed: now,
+      nextReview: now,
+      reviewCount: 0
+    })));
+  };
+
   const updateCardDifficulty = (id: string, known: boolean) => {
     setCards(prev => prev.map(card => {
       if (card.id === id) {
@@ -102,6 +112,7 @@ export const useCards = () => {
     addCard,
     deleteCard,
     updateCardDifficulty,
-    getCardsForReview
+    getCardsForReview,
+    resetProgress
   };
 };

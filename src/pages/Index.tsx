@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, BookOpen, List, Brain, PenTool } from "lucide-react";
 
 const Index = () => {
-  const { cards, addCard, deleteCard, updateCardDifficulty, getCardsForReview } = useCards();
+  const { cards, addCard, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress } = useCards();
   const [currentView, setCurrentView] = useState<'study' | 'add' | 'list'>('study');
   const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -165,7 +165,11 @@ const Index = () => {
 
         {currentView === 'list' && (
           <div className="max-w-4xl mx-auto">
-            <CardList cards={cards} onDeleteCard={deleteCard} />
+            <CardList 
+              cards={cards} 
+              onDeleteCard={deleteCard} 
+              onResetProgress={resetProgress}
+            />
           </div>
         )}
       </main>
