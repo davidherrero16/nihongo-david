@@ -1,26 +1,36 @@
-
 import { useState } from "react";
 import AddCardForm from "@/components/AddCardForm";
 import FlashCard from "@/components/FlashCard";
+import WritingMode from "@/components/WritingMode";
 import CardList from "@/components/CardList";
 import { useCards } from "@/hooks/useCards";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, List } from "lucide-react";
+import { Plus, BookOpen, List, Brain, PenTool } from "lucide-react";
 
 const Index = () => {
-  const { cards, addCard, deleteCard } = useCards();
+  const { cards, addCard, deleteCard, updateCardDifficulty, getCardsForReview } = useCards();
   const [currentView, setCurrentView] = useState<'study' | 'add' | 'list'>('study');
+  const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
+  const reviewCards = getCardsForReview();
+  const currentCards = reviewCards.length > 0 ? reviewCards : cards;
+
   const nextCard = () => {
-    if (cards.length > 0) {
-      setCurrentCardIndex((prev) => (prev + 1) % cards.length);
+    if (currentCards.length > 0) {
+      setCurrentCardIndex((prev) => (prev + 1) % currentCards.length);
     }
   };
 
   const prevCard = () => {
-    if (cards.length > 0) {
-      setCurrentCardIndex((prev) => (prev - 1 + cards.length) % cards.length);
+    if (currentCards.length > 0) {
+      setCurrentCardIndex((prev) => (prev - 1 + currentCards.length) % currentCards.length);
+    }
+  };
+
+  const handleAnswer = (known: boolean) => {
+    if (currentCards.length > 0) {
+      updateCardDifficulty(currentCards[currentCardIndex].id, known);
     }
   };
 
@@ -69,23 +79,65 @@ const Index = () => {
           <div className="max-w-2xl mx-auto">
             {cards.length > 0 ? (
               <div className="space-y-6">
+                {/* Selector de modo */}
+                <div className="flex justify-center gap-2">
+                  <Button
+                    variant={studyMode === 'easy' ? 'default' : 'outline'}
+                    onClick={() => setStudyMode('easy')}
+                    className="flex items-center gap-2"
+                  >
+                    <Brain className="h-4 w-4" />
+                    Modo Fácil
+                  </Button>
+                  <Button
+                    variant={studyMode === 'hard' ? 'default' : 'outline'}
+                    onClick={() => setStudyMode('hard')}
+                    className="flex items-center gap-2"
+                  >
+                    <PenTool className="h-4 w-4" />
+                    Modo Difícil
+                  </Button>
+                </div>
+
+                {/* Información de progreso */}
                 <div className="text-center">
                   <p className="text-muted-foreground mb-2">
-                    Tarjeta {currentCardIndex + 1} de {cards.length}
+                    {reviewCards.length > 0 ? (
+                      <>Tarjetas para revisar: {reviewCards.length} | </>
+                    ) : null}
+                    Tarjeta {currentCardIndex + 1} de {currentCards.length}
                   </p>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div 
                       className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${((currentCardIndex + 1) / cards.length) * 100}%` }}
+                      style={{ width: `${((currentCardIndex + 1) / currentCards.length) * 100}%` }}
                     />
                   </div>
+                  {reviewCards.length > 0 && (
+                    <p className="text-sm text-green-600 mt-1">
+                      Estudiando tarjetas pendientes de revisión
+                    </p>
+                  )}
                 </div>
-                <FlashCard 
-                  card={cards[currentCardIndex]} 
-                  onNext={nextCard}
-                  onPrevious={prevCard}
-                  showNavigation={cards.length > 1}
-                />
+
+                {/* Tarjeta de estudio */}
+                {studyMode === 'easy' ? (
+                  <FlashCard 
+                    card={currentCards[currentCardIndex]} 
+                    onAnswer={handleAnswer}
+                    onNext={nextCard}
+                    onPrevious={prevCard}
+                    showNavigation={currentCards.length > 1}
+                  />
+                ) : (
+                  <WritingMode 
+                    card={currentCards[currentCardIndex]} 
+                    onAnswer={handleAnswer}
+                    onNext={nextCard}
+                    onPrevious={prevCard}
+                    showNavigation={currentCards.length > 1}
+                  />
+                )}
               </div>
             ) : (
               <div className="text-center py-16">

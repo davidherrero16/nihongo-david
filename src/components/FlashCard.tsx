@@ -2,21 +2,34 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
 import type { Card as CardType } from "@/hooks/useCards";
 
 interface FlashCardProps {
   card: CardType;
+  onAnswer: (known: boolean) => void;
   onNext?: () => void;
   onPrevious?: () => void;
   showNavigation?: boolean;
 }
 
-const FlashCard = ({ card, onNext, onPrevious, showNavigation = true }: FlashCardProps) => {
+const FlashCard = ({ card, onAnswer, onNext, onPrevious, showNavigation = true }: FlashCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
+  };
+
+  const handleKnown = () => {
+    onAnswer(true);
+    setIsFlipped(false);
+    onNext?.();
+  };
+
+  const handleUnknown = () => {
+    onAnswer(false);
+    setIsFlipped(false);
+    onNext?.();
   };
 
   const handleNext = () => {
@@ -63,7 +76,7 @@ const FlashCard = ({ card, onNext, onPrevious, showNavigation = true }: FlashCar
                   {card.meaning}
                 </div>
                 <p className="text-sm text-muted-foreground mt-8">
-                  Haz clic para voltear
+                  ¿Conocías esta tarjeta?
                 </p>
               </div>
             )}
@@ -71,31 +84,54 @@ const FlashCard = ({ card, onNext, onPrevious, showNavigation = true }: FlashCar
         </Card>
       </div>
 
-      {showNavigation && (
-        <div className="flex justify-between items-center">
-          <Button 
-            variant="outline" 
-            onClick={handlePrevious}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Anterior
-          </Button>
-          
-          <Button onClick={handleFlip} variant="secondary">
-            {isFlipped ? 'Ver Palabra' : 'Ver Significado'}
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            onClick={handleNext}
-            className="flex items-center gap-2"
-          >
-            Siguiente
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+      <div className="space-y-4">
+        {isFlipped && (
+          <div className="flex gap-2 justify-center">
+            <Button 
+              onClick={handleKnown}
+              variant="outline"
+              className="flex-1 max-w-xs text-green-600 border-green-200 hover:bg-green-50"
+            >
+              <Check className="h-4 w-4 mr-2" />
+              Lo sé
+            </Button>
+            <Button 
+              onClick={handleUnknown}
+              variant="outline"
+              className="flex-1 max-w-xs text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <X className="h-4 w-4 mr-2" />
+              No lo sé
+            </Button>
+          </div>
+        )}
+
+        {showNavigation && (
+          <div className="flex justify-between items-center">
+            <Button 
+              variant="outline" 
+              onClick={handlePrevious}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+            
+            <Button onClick={handleFlip} variant="secondary">
+              {isFlipped ? 'Ver Palabra' : 'Ver Significado'}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={handleNext}
+              className="flex items-center gap-2"
+            >
+              Siguiente
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
