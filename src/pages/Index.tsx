@@ -5,11 +5,12 @@ import WritingMode from "@/components/WritingMode";
 import CardList from "@/components/CardList";
 import { useCards } from "@/hooks/useCards";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, List, Brain, PenTool } from "lucide-react";
+import { Plus, BookOpen, List, Brain, PenTool, Calculator } from "lucide-react";
+import NumberExercise from "@/components/NumberExercise";
 
 const Index = () => {
   const { cards, addCard, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress } = useCards();
-  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list'>('study');
+  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers'>('study');
   const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
@@ -51,6 +52,14 @@ const Index = () => {
                 size="sm"
               >
                 Estudiar
+              </Button>
+              <Button
+                variant={currentView === 'numbers' ? 'default' : 'outline'}
+                onClick={() => setCurrentView('numbers')}
+                size="sm"
+              >
+                <Calculator className="h-4 w-4 mr-1" />
+                Números
               </Button>
               <Button
                 variant={currentView === 'add' ? 'default' : 'outline'}
@@ -155,6 +164,10 @@ const Index = () => {
               </div>
             )}
           </div>
+        )}
+
+        {currentView === 'numbers' && (
+          <NumberExercise />
         )}
 
         {currentView === 'add' && (
