@@ -156,15 +156,17 @@ const NumberExercise = () => {
               ) : (
                 <div className="space-y-4">
                   <div className={`p-4 rounded-lg ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                    <div className={`text-lg font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                    <div className={`text-lg font-semibold mb-2 ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
                       {isCorrect ? '¡Correcto!' : 'Incorrecto'}
                     </div>
-                    <div className="text-sm mt-2">
-                      {mode === 'number-to-hiragana' ? (
-                        <>Respuesta correcta: <span className="font-medium">{currentHiragana}</span></>
-                      ) : (
-                        <>Respuesta correcta: <span className="font-medium">{currentNumber.toLocaleString()}</span></>
-                      )}
+                    {!isCorrect && (
+                      <div className="text-sm mb-2 text-red-600">
+                        <span className="font-medium">Tu respuesta:</span> {userAnswer || "(vacío)"}
+                      </div>
+                    )}
+                    <div className="text-sm">
+                      <span className="font-medium">Respuesta correcta:</span>{' '}
+                      {mode === 'number-to-hiragana' ? currentHiragana : currentNumber.toLocaleString()}
                     </div>
                   </div>
 
