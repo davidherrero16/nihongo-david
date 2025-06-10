@@ -1,101 +1,264 @@
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, BookOpen, RotateCcw } from "lucide-react";
-import type { Card as CardType } from "@/hooks/useCards";
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Card } from "@/hooks/useDecks";
+import { Trash2, RefreshCw, Search, ArrowUpDown, FileX } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface CardListProps {
-  cards: CardType[];
+  cards: Card[];
   onDeleteCard: (id: string) => void;
   onResetProgress: () => void;
+  onDeleteDeck?: () => void;
+  isDeletable?: boolean;
 }
 
-const CardList = ({ cards, onDeleteCard, onResetProgress }: CardListProps) => {
+const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeletable = false }: CardListProps) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortKey, setSortKey] = useState<keyof Card>("word");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  const handleSort = (key: keyof Card) => {
+    if (sortKey === key) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortDirection("asc");
+    }
+  };
+
+  const filteredCards = cards.filter(
+    (card) =>
+      card.word.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      card.reading.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      card.meaning.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const sortedCards = [...filteredCards].sort((a, b) => {
+    let valueA: any = a[sortKey];
+    let valueB: any = b[sortKey];
+
+    // Handle dates
+    if (valueA instanceof Date && valueB instanceof Date) {
+      valueA = valueA.getTime();
+      valueB = valueB.getTime();
+    }
+
+    // Handle strings
+    if (typeof valueA === 'string' && typeof valueB === 'string') {
+      valueA = valueA.toLowerCase();
+      valueB = valueB.toLowerCase();
+    }
+
+    if (valueA < valueB) return sortDirection === "asc" ? -1 : 1;
+    if (valueA > valueB) return sortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString();
+  };
+
   const getDifficultyColor = (difficulty: number) => {
-    if (difficulty <= 1) return "text-red-600 bg-red-50";
-    if (difficulty <= 2) return "text-orange-600 bg-orange-50";
-    if (difficulty <= 3) return "text-yellow-600 bg-yellow-50";
-    if (difficulty <= 4) return "text-blue-600 bg-blue-50";
-    return "text-green-600 bg-green-50";
+    const colors = [
+      "bg-red-100 text-red-800",       // 0
+      "bg-orange-100 text-orange-800", // 1
+      "bg-yellow-100 text-yellow-800", // 2
+      "bg-lime-100 text-lime-800",     // 3
+      "bg-green-100 text-green-800",   // 4
+      "bg-emerald-100 text-emerald-800", // 5
+    ];
+    return colors[difficulty] || colors[0];
   };
-
-  const getDifficultyLabel = (difficulty: number) => {
-    if (difficulty <= 1) return "Muy Difícil";
-    if (difficulty <= 2) return "Difícil";
-    if (difficulty <= 3) return "Medio";
-    if (difficulty <= 4) return "Fácil";
-    return "Muy Fácil";
-  };
-
-  if (cards.length === 0) {
-    return (
-      <div className="text-center py-16">
-        <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-muted-foreground mb-2">
-          No hay tarjetas guardadas
-        </h2>
-        <p className="text-muted-foreground">
-          Las tarjetas que añadas aparecerán aquí
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Mis Tarjetas</h2>
-        <div className="flex items-center gap-4">
-          <span className="text-muted-foreground">
-            {cards.length} tarjeta{cards.length !== 1 ? 's' : ''}
-          </span>
-          <Button
-            variant="outline"
-            onClick={onResetProgress}
-            className="text-orange-600 border-orange-200 hover:bg-orange-50"
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Resetear Progreso
-          </Button>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          <Input
+            placeholder="Buscar tarjetas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full sm:w-64"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-orange-600 border-orange-200 hover:bg-orange-50">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Resetear Progreso
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Resetear progreso de estudio</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción reseteará todo el progreso de estudio para todas las tarjetas. 
+                  El nivel de dificultad volverá a 0 y se reiniciarán las fechas de revisión.
+                  ¿Estás seguro de que quieres continuar?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={onResetProgress}>Resetear</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {isDeletable && onDeleteDeck && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
+                  <FileX className="h-4 w-4 mr-2" />
+                  Eliminar Deck
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Eliminar deck</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción eliminará todo el deck y todas sus tarjetas.
+                    Esta acción no se puede deshacer. ¿Estás seguro?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={onDeleteDeck} className="bg-red-600">
+                    Eliminar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
       </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
-          <Card key={card.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center justify-between">
-                <span>{card.word}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDeleteCard(card.id)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </CardTitle>
-              <CardDescription>{card.reading}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm mb-3">{card.meaning}</p>
-              
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                <span>Añadida: {card.createdAt.toLocaleDateString('es-ES')}</span>
-                <span>Revisiones: {card.reviewCount}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  Próxima revisión: {card.nextReview.toLocaleDateString('es-ES')}
-                </span>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${getDifficultyColor(card.difficulty)}`}>
-                  Nivel {card.difficulty} - {getDifficultyLabel(card.difficulty)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[180px] cursor-pointer" onClick={() => handleSort("word")}>
+                <div className="flex items-center">
+                  Palabra
+                  {sortKey === "word" && (
+                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("reading")}>
+                <div className="flex items-center">
+                  Lectura
+                  {sortKey === "reading" && (
+                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("meaning")}>
+                <div className="flex items-center">
+                  Significado
+                  {sortKey === "meaning" && (
+                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead className="hidden md:table-cell cursor-pointer" onClick={() => handleSort("difficulty")}>
+                <div className="flex items-center">
+                  Nivel
+                  {sortKey === "difficulty" && (
+                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead className="hidden lg:table-cell cursor-pointer" onClick={() => handleSort("nextReview")}>
+                <div className="flex items-center">
+                  Próxima revisión
+                  {sortKey === "nextReview" && (
+                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedCards.length > 0 ? (
+              sortedCards.map((card) => (
+                <TableRow key={card.id}>
+                  <TableCell className="font-medium">{card.word}</TableCell>
+                  <TableCell>{card.reading}</TableCell>
+                  <TableCell>{card.meaning}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(card.difficulty)}`}>
+                      {card.difficulty}/5
+                    </span>
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">{formatDate(card.nextReview)}</TableCell>
+                  <TableCell className="text-right">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-red-500"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Eliminar tarjeta?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            ¿Estás seguro de que quieres eliminar esta tarjeta? Esta acción no se puede deshacer.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => onDeleteCard(card.id)}
+                            className="bg-red-600"
+                          >
+                            Eliminar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                  No se encontraron tarjetas que coincidan con la búsqueda
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="text-sm text-muted-foreground text-center">
+        {filteredCards.length} {filteredCards.length === 1 ? "tarjeta" : "tarjetas"} en total
       </div>
     </div>
   );

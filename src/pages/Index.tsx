@@ -1,21 +1,26 @@
+
 import { useState } from "react";
 import AddCardForm from "@/components/AddCardForm";
 import FlashCard from "@/components/FlashCard";
 import WritingMode from "@/components/WritingMode";
 import CardList from "@/components/CardList";
-import { useCards } from "@/hooks/useCards";
+import { useDecks } from "@/hooks/useDecks";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, List, Brain, PenTool, Calculator } from "lucide-react";
+import { Plus, BookOpen, List, Brain, PenTool, Calculator, FileDown, LayoutPanelLeft, KanbanSquare } from "lucide-react";
 import NumberExercise from "@/components/NumberExercise";
+import ImportDeck from "@/components/ImportDeck";
+import KanaExercise from "@/components/KanaExercise";
 
 const Index = () => {
-  const { cards, addCard, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress } = useCards();
-  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers'>('study');
+  const { decks, addCard, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress, importDeck, deleteDeck } = useDecks();
+  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'import' | 'kana'>('study');
   const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [currentDeckId, setCurrentDeckId] = useState<string>('default');
 
-  const reviewCards = getCardsForReview();
-  const currentCards = reviewCards.length > 0 ? reviewCards : cards;
+  const reviewCards = getCardsForReview(currentDeckId);
+  const currentDeck = decks.find(deck => deck.id === currentDeckId);
+  const currentCards = reviewCards.length > 0 ? reviewCards : (currentDeck?.cards || []);
 
   const nextCard = () => {
     if (currentCards.length > 0) {
@@ -31,7 +36,7 @@ const Index = () => {
 
   const handleAnswer = (known: boolean) => {
     if (currentCards.length > 0) {
-      updateCardDifficulty(currentCards[currentCardIndex].id, known);
+      updateCardDifficulty(currentCards[currentCardIndex].id, known, currentDeckId);
     }
   };
 
@@ -40,42 +45,65 @@ const Index = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
               <BookOpen className="h-6 w-6" />
               Tarjetas Japonés
             </h1>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               <Button
                 variant={currentView === 'study' ? 'default' : 'outline'}
                 onClick={() => setCurrentView('study')}
                 size="sm"
+                className="flex items-center gap-1"
               >
-                Estudiar
+                <Brain className="h-4 w-4" />
+                <span className="hidden sm:inline">Estudiar</span>
               </Button>
               <Button
                 variant={currentView === 'numbers' ? 'default' : 'outline'}
                 onClick={() => setCurrentView('numbers')}
                 size="sm"
+                className="flex items-center gap-1"
               >
-                <Calculator className="h-4 w-4 mr-1" />
-                Números
+                <Calculator className="h-4 w-4" />
+                <span className="hidden sm:inline">Números</span>
+              </Button>
+              <Button
+                variant={currentView === 'kana' ? 'default' : 'outline'}
+                onClick={() => setCurrentView('kana')}
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <KanbanSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">Kana</span>
               </Button>
               <Button
                 variant={currentView === 'add' ? 'default' : 'outline'}
                 onClick={() => setCurrentView('add')}
                 size="sm"
+                className="flex items-center gap-1"
               >
-                <Plus className="h-4 w-4 mr-1" />
-                Añadir
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Añadir</span>
+              </Button>
+              <Button
+                variant={currentView === 'import' ? 'default' : 'outline'}
+                onClick={() => setCurrentView('import')}
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <FileDown className="h-4 w-4" />
+                <span className="hidden sm:inline">Importar</span>
               </Button>
               <Button
                 variant={currentView === 'list' ? 'default' : 'outline'}
                 onClick={() => setCurrentView('list')}
                 size="sm"
+                className="flex items-center gap-1"
               >
-                <List className="h-4 w-4 mr-1" />
-                Lista
+                <List className="h-4 w-4" />
+                <span className="hidden sm:inline">Lista</span>
               </Button>
             </div>
           </div>
@@ -86,7 +114,30 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         {currentView === 'study' && (
           <div className="max-w-2xl mx-auto">
-            {cards.length > 0 ? (
+            {/* Selector de deck */}
+            <div className="mb-6">
+              <div className="flex justify-center mb-4">
+                <div className="flex flex-wrap gap-2 max-w-full overflow-x-auto">
+                  {decks.map(deck => (
+                    <Button
+                      key={deck.id}
+                      variant={currentDeckId === deck.id ? 'default' : 'outline'}
+                      onClick={() => {
+                        setCurrentDeckId(deck.id);
+                        setCurrentCardIndex(0);
+                      }}
+                      size="sm"
+                      className={`flex items-center gap-2 ${deck.isImported ? 'border-indigo-300' : ''}`}
+                    >
+                      <LayoutPanelLeft className="h-4 w-4" />
+                      {deck.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {currentDeck && currentDeck.cards.length > 0 ? (
               <div className="space-y-6">
                 {/* Selector de modo */}
                 <div className="flex justify-center gap-2">
@@ -130,22 +181,24 @@ const Index = () => {
                 </div>
 
                 {/* Tarjeta de estudio */}
-                {studyMode === 'easy' ? (
-                  <FlashCard 
-                    card={currentCards[currentCardIndex]} 
-                    onAnswer={handleAnswer}
-                    onNext={nextCard}
-                    onPrevious={prevCard}
-                    showNavigation={currentCards.length > 1}
-                  />
-                ) : (
-                  <WritingMode 
-                    card={currentCards[currentCardIndex]} 
-                    onAnswer={handleAnswer}
-                    onNext={nextCard}
-                    onPrevious={prevCard}
-                    showNavigation={currentCards.length > 1}
-                  />
+                {currentCards.length > 0 && (
+                  studyMode === 'easy' ? (
+                    <FlashCard 
+                      card={currentCards[currentCardIndex]} 
+                      onAnswer={handleAnswer}
+                      onNext={nextCard}
+                      onPrevious={prevCard}
+                      showNavigation={currentCards.length > 1}
+                    />
+                  ) : (
+                    <WritingMode 
+                      card={currentCards[currentCardIndex]} 
+                      onAnswer={handleAnswer}
+                      onNext={nextCard}
+                      onPrevious={prevCard}
+                      showNavigation={currentCards.length > 1}
+                    />
+                  )
                 )}
               </div>
             ) : (
@@ -169,19 +222,78 @@ const Index = () => {
         {currentView === 'numbers' && (
           <NumberExercise />
         )}
+        
+        {currentView === 'kana' && (
+          <KanaExercise />
+        )}
 
         {currentView === 'add' && (
           <div className="max-w-lg mx-auto">
-            <AddCardForm onAddCard={addCard} />
+            <div className="mb-6">
+              <div className="flex justify-center mb-4">
+                <div className="flex flex-wrap gap-2 max-w-full overflow-x-auto">
+                  {decks.map(deck => (
+                    <Button
+                      key={deck.id}
+                      variant={currentDeckId === deck.id ? 'default' : 'outline'}
+                      onClick={() => setCurrentDeckId(deck.id)}
+                      size="sm"
+                      className={`flex items-center gap-2 ${deck.isImported ? 'border-indigo-300' : ''}`}
+                    >
+                      <LayoutPanelLeft className="h-4 w-4" />
+                      {deck.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <AddCardForm 
+              onAddCard={(word, reading, meaning) => 
+                addCard(word, reading, meaning, currentDeckId)
+              } 
+            />
+          </div>
+        )}
+        
+        {currentView === 'import' && (
+          <div className="max-w-lg mx-auto">
+            <ImportDeck onImport={importDeck} />
           </div>
         )}
 
         {currentView === 'list' && (
           <div className="max-w-4xl mx-auto">
+            <div className="mb-6">
+              <div className="flex justify-center mb-4">
+                <div className="flex flex-wrap gap-2 max-w-full overflow-x-auto">
+                  {decks.map(deck => (
+                    <Button
+                      key={deck.id}
+                      variant={currentDeckId === deck.id ? 'default' : 'outline'}
+                      onClick={() => setCurrentDeckId(deck.id)}
+                      size="sm"
+                      className={`flex items-center gap-2 ${deck.isImported ? 'border-indigo-300' : ''}`}
+                    >
+                      <LayoutPanelLeft className="h-4 w-4" />
+                      {deck.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
             <CardList 
-              cards={cards} 
-              onDeleteCard={deleteCard} 
-              onResetProgress={resetProgress}
+              cards={currentDeck?.cards || []} 
+              onDeleteCard={(id) => deleteCard(id, currentDeckId)} 
+              onResetProgress={() => resetProgress(currentDeckId)}
+              onDeleteDeck={() => {
+                if (currentDeckId !== 'default') {
+                  deleteDeck(currentDeckId);
+                  setCurrentDeckId('default');
+                }
+              }}
+              isDeletable={currentDeckId !== 'default'}
             />
           </div>
         )}
