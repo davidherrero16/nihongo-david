@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, X, RefreshCw, Settings, Shuffle } from "lucide-react";
+import { Check, X, RefreshCw, Settings, Shuffle, PenTool } from "lucide-react";
 
 // Datos de hiragana y katakana
 const hiraganaChars = {
@@ -76,10 +76,12 @@ const KanaExercise = () => {
   const [isCorrect, setIsCorrect] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
 
-  // Inicializar con un carácter aleatorio
-  useState(() => {
+  // Generar nuevo carácter cuando cambien las configuraciones
+  useEffect(() => {
     generateNewChar();
-  });
+    setUserAnswer("");
+    setShowResult(false);
+  }, [kanaType, charSet, mode]);
 
   function generateNewChar() {
     const chars = kanaType === 'hiragana' 
@@ -100,7 +102,7 @@ const KanaExercise = () => {
     const keys = Object.keys(chars);
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     
-    if (mode === 'kana-to-romaji') {
+    if (mode === 'kana-to-romaji' || mode === 'writing') {
       setCurrentChar(randomKey);
       setCurrentAnswer(chars[randomKey]);
     } else {
@@ -134,6 +136,18 @@ const KanaExercise = () => {
     return Math.round((score.correct / score.total) * 100);
   };
 
+  const handleKanaTypeChange = (newType: KanaType) => {
+    setKanaType(newType);
+  };
+
+  const handleCharSetChange = (newCharSet: CharSetType) => {
+    setCharSet(newCharSet);
+  };
+
+  const handleModeChange = (newMode: ExerciseMode) => {
+    setMode(newMode);
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
@@ -142,14 +156,14 @@ const KanaExercise = () => {
         <div className="flex flex-wrap justify-center gap-2 mb-4">
           <Button
             variant={kanaType === 'hiragana' ? 'default' : 'outline'}
-            onClick={() => setKanaType('hiragana')}
+            onClick={() => handleKanaTypeChange('hiragana')}
             size="sm"
           >
             Hiragana
           </Button>
           <Button
             variant={kanaType === 'katakana' ? 'default' : 'outline'}
-            onClick={() => setKanaType('katakana')}
+            onClick={() => handleKanaTypeChange('katakana')}
             size="sm"
           >
             Katakana
@@ -159,21 +173,21 @@ const KanaExercise = () => {
         <div className="flex flex-wrap justify-center gap-2 mb-4">
           <Button
             variant={charSet === 'basic' ? 'default' : 'outline'}
-            onClick={() => setCharSet('basic')}
+            onClick={() => handleCharSetChange('basic')}
             size="sm"
           >
             Básico
           </Button>
           <Button
             variant={charSet === 'dakuten' ? 'default' : 'outline'}
-            onClick={() => setCharSet('dakuten')}
+            onClick={() => handleCharSetChange('dakuten')}
             size="sm"
           >
             Dakuten
           </Button>
           <Button
             variant={charSet === 'all' ? 'default' : 'outline'}
-            onClick={() => setCharSet('all')}
+            onClick={() => handleCharSetChange('all')}
             size="sm"
           >
             Todos
@@ -183,39 +197,32 @@ const KanaExercise = () => {
         <div className="flex flex-wrap justify-center gap-2 mb-4">
           <Button
             variant={mode === 'kana-to-romaji' ? 'default' : 'outline'}
-            onClick={() => {
-              setMode('kana-to-romaji');
-              setUserAnswer("");
-              setShowResult(false);
-              generateNewChar();
-            }}
+            onClick={() => handleModeChange('kana-to-romaji')}
             size="sm"
           >
             Kana → Romaji
           </Button>
           <Button
             variant={mode === 'romaji-to-kana' ? 'default' : 'outline'}
-            onClick={() => {
-              setMode('romaji-to-kana');
-              setUserAnswer("");
-              setShowResult(false);
-              generateNewChar();
-            }}
+            onClick={() => handleModeChange('romaji-to-kana')}
             size="sm"
           >
             Romaji → Kana
           </Button>
           <Button
             variant={mode === 'phrase' ? 'default' : 'outline'}
-            onClick={() => {
-              setMode('phrase');
-              setUserAnswer("");
-              setShowResult(false);
-              generateNewChar();
-            }}
+            onClick={() => handleModeChange('phrase')}
             size="sm"
           >
             Frases
+          </Button>
+          <Button
+            variant={mode === 'writing' ? 'default' : 'outline'}
+            onClick={() => handleModeChange('writing')}
+            size="sm"
+          >
+            <PenTool className="h-4 w-4 mr-1" />
+            Escritura
           </Button>
         </div>
       </div>
@@ -237,9 +244,29 @@ const KanaExercise = () => {
       <Card className="min-h-[300px] shadow-lg">
         <CardContent className="p-8 flex flex-col items-center justify-center min-h-[300px] text-center">
           <div className="space-y-6 w-full max-w-md">
-            <div className="text-5xl font-bold text-primary mb-4">
-              {currentChar}
-            </div>
+            {mode === 'writing' ? (
+              <div className="space-y-4">
+                <div className="text-lg font-medium text-muted-foreground">
+                  Escribe en {mode === 'writing' ? 'romaji' : 'kana'}: {currentAnswer}
+                </div>
+                <div className="border-2 border-dashed border-muted-foreground rounded-lg h-32 flex items-center justify-center bg-muted/20">
+                  <div className="text-center">
+                    <PenTool className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Área de escritura</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      (Funcionalidad de dibujo próximamente)
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Por ahora, escribe la respuesta abajo:
+                </p>
+              </div>
+            ) : (
+              <div className="text-5xl font-bold text-primary mb-4">
+                {currentChar}
+              </div>
+            )}
 
             <div className="space-y-4">
               <Input
