@@ -4,15 +4,16 @@ import FlashCard from "@/components/FlashCard";
 import WritingMode from "@/components/WritingMode";
 import CardList from "@/components/CardList";
 import StudySession from "@/components/StudySession";
+import DeckSelector from "@/components/DeckSelector";
 import { useDecks } from "@/hooks/useDecks";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, List, Brain, PenTool, Calculator, FileDown, LayoutPanelLeft, KanbanSquare, Settings } from "lucide-react";
+import { Plus, BookOpen, List, Brain, PenTool, Calculator, FileDown, Settings } from "lucide-react";
 import NumberExercise from "@/components/NumberExercise";
 import ImportDeck from "@/components/ImportDeck";
 import KanaExercise from "@/components/KanaExercise";
 
 const Index = () => {
-  const { decks, addCard, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress, importDeck, deleteDeck } = useDecks();
+  const { decks, addCard, createDeck, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress, importDeck, deleteDeck } = useDecks();
   const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'import' | 'kana' | 'session'>('study');
   const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -85,7 +86,7 @@ const Index = () => {
                 size="sm"
                 className="flex items-center gap-1"
               >
-                <KanbanSquare className="h-4 w-4" />
+                <span className="text-sm">あ</span>
                 <span className="hidden sm:inline">Kana</span>
               </Button>
               <Button
@@ -135,27 +136,21 @@ const Index = () => {
 
         {currentView === 'study' && (
           <div className="max-w-2xl mx-auto">
-            {/* Selector de deck */}
+            {/* Selector de deck mejorado */}
             <div className="mb-6">
-              <div className="flex justify-center mb-4">
-                <div className="flex flex-wrap gap-2 max-w-full overflow-x-auto">
-                  {decks.map(deck => (
-                    <Button
-                      key={deck.id}
-                      variant={currentDeckId === deck.id ? 'default' : 'outline'}
-                      onClick={() => {
-                        setCurrentDeckId(deck.id);
-                        setCurrentCardIndex(0);
-                      }}
-                      size="sm"
-                      className={`flex items-center gap-2 ${deck.isImported ? 'border-indigo-300' : ''}`}
-                    >
-                      <LayoutPanelLeft className="h-4 w-4" />
-                      {deck.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <DeckSelector
+                decks={decks}
+                currentDeckId={currentDeckId}
+                onSelectDeck={(deckId) => {
+                  setCurrentDeckId(deckId);
+                  setCurrentCardIndex(0);
+                }}
+                onCreateDeck={(name) => {
+                  const newDeckId = createDeck(name);
+                  setCurrentDeckId(newDeckId);
+                  setCurrentCardIndex(0);
+                }}
+              />
             </div>
 
             {currentDeck && currentDeck.cards.length > 0 ? (
@@ -299,22 +294,15 @@ const Index = () => {
         {currentView === 'add' && (
           <div className="max-w-lg mx-auto">
             <div className="mb-6">
-              <div className="flex justify-center mb-4">
-                <div className="flex flex-wrap gap-2 max-w-full overflow-x-auto">
-                  {decks.map(deck => (
-                    <Button
-                      key={deck.id}
-                      variant={currentDeckId === deck.id ? 'default' : 'outline'}
-                      onClick={() => setCurrentDeckId(deck.id)}
-                      size="sm"
-                      className={`flex items-center gap-2 ${deck.isImported ? 'border-indigo-300' : ''}`}
-                    >
-                      <LayoutPanelLeft className="h-4 w-4" />
-                      {deck.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <DeckSelector
+                decks={decks}
+                currentDeckId={currentDeckId}
+                onSelectDeck={setCurrentDeckId}
+                onCreateDeck={(name) => {
+                  const newDeckId = createDeck(name);
+                  setCurrentDeckId(newDeckId);
+                }}
+              />
             </div>
             
             <AddCardForm 
@@ -334,22 +322,15 @@ const Index = () => {
         {currentView === 'list' && (
           <div className="max-w-4xl mx-auto">
             <div className="mb-6">
-              <div className="flex justify-center mb-4">
-                <div className="flex flex-wrap gap-2 max-w-full overflow-x-auto">
-                  {decks.map(deck => (
-                    <Button
-                      key={deck.id}
-                      variant={currentDeckId === deck.id ? 'default' : 'outline'}
-                      onClick={() => setCurrentDeckId(deck.id)}
-                      size="sm"
-                      className={`flex items-center gap-2 ${deck.isImported ? 'border-indigo-300' : ''}`}
-                    >
-                      <LayoutPanelLeft className="h-4 w-4" />
-                      {deck.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <DeckSelector
+                decks={decks}
+                currentDeckId={currentDeckId}
+                onSelectDeck={setCurrentDeckId}
+                onCreateDeck={(name) => {
+                  const newDeckId = createDeck(name);
+                  setCurrentDeckId(newDeckId);
+                }}
+              />
             </div>
             
             <CardList 
@@ -372,3 +353,5 @@ const Index = () => {
 };
 
 export default Index;
+
+</edits_to_apply>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, RotateCcw, ArrowRight } from "lucide-react";
+import FlashCard from "@/components/FlashCard";
 import type { Card as CardType } from "@/hooks/useDecks";
 
 interface StudySessionProps {
@@ -53,6 +54,18 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     }
   };
 
+  const handleNext = () => {
+    if (currentIndex + 1 < sessionCards.length) {
+      setCurrentIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+  };
+
   const handleFinishSession = () => {
     setShowSummary(false);
     setCurrentIndex(0);
@@ -68,12 +81,10 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     }
 
     // Reiniciar con las tarjetas falladas
-    const failedCardData = failedCards.map(result => result.card);
     setCurrentIndex(0);
     setSessionResults([]);
     setShowSummary(false);
     
-    // Aquí podrías implementar lógica adicional para manejar solo las tarjetas falladas
     // Por simplicidad, vamos a finalizar la sesión
     handleFinishSession();
   };
@@ -175,84 +186,14 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
         </div>
       </div>
 
-      {/* Importar componente de tarjeta según el modo */}
-      {studyMode === 'easy' ? (
-        <div>
-          {/* Aquí iría FlashCard pero necesitamos importarlo */}
-          <Card className="min-h-[300px] cursor-pointer transition-all duration-500 transform hover:scale-105 shadow-lg">
-            <CardContent className="p-8 flex flex-col items-center justify-center min-h-[300px] text-center">
-              <div className="space-y-4">
-                <div className="text-4xl font-bold text-primary mb-2">
-                  {currentCard.word}
-                </div>
-                <div className="text-xl text-muted-foreground">
-                  {currentCard.reading}
-                </div>
-                <div className="text-xl font-medium mt-4">
-                  {currentCard.meaning}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <div className="flex gap-2 justify-center mt-4">
-            <Button 
-              onClick={() => handleAnswer(true)}
-              variant="outline"
-              className="flex-1 max-w-xs text-green-600 border-green-200 hover:bg-green-50"
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Lo sé
-            </Button>
-            <Button 
-              onClick={() => handleAnswer(false)}
-              variant="outline"
-              className="flex-1 max-w-xs text-red-600 border-red-200 hover:bg-red-50"
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              No lo sé
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div>
-          {/* Modo difícil - versión simplificada */}
-          <Card className="min-h-[300px]">
-            <CardContent className="p-8 flex flex-col items-center justify-center min-h-[300px] text-center">
-              <div className="space-y-4">
-                <div className="text-2xl text-muted-foreground mb-4">
-                  Escribe el significado de:
-                </div>
-                <div className="text-4xl font-bold text-primary mb-2">
-                  {currentCard.word}
-                </div>
-                <div className="text-xl text-muted-foreground">
-                  {currentCard.reading}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <div className="flex gap-2 justify-center mt-4">
-            <Button 
-              onClick={() => handleAnswer(true)}
-              variant="outline"
-              className="flex-1 max-w-xs text-green-600 border-green-200 hover:bg-green-50"
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Correcto
-            </Button>
-            <Button 
-              onClick={() => handleAnswer(false)}
-              variant="outline"
-              className="flex-1 max-w-xs text-red-600 border-red-200 hover:bg-red-50"
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              Incorrecto
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Usar FlashCard para ambos modos */}
+      <FlashCard 
+        card={currentCard}
+        onAnswer={handleAnswer}
+        onNext={handleNext}
+        onPrevious={handlePrevious}
+        showNavigation={sessionCards.length > 1}
+      />
     </div>
   );
 };

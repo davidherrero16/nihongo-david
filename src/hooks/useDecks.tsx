@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 
 export interface Card {
@@ -102,6 +101,18 @@ export const useDecks = () => {
         ? { ...deck, cards: [...deck.cards, newCard] }
         : deck
     ));
+  };
+
+  const createDeck = (name: string) => {
+    const newDeck: Deck = {
+      id: Date.now().toString(),
+      name,
+      cards: [],
+      isImported: false,
+      createdAt: new Date()
+    };
+    setDecks(prev => [...prev, newDeck]);
+    return newDeck.id;
   };
 
   const deleteCard = (cardId: string, deckId: string) => {
@@ -208,6 +219,7 @@ export const useDecks = () => {
   return {
     decks,
     addCard,
+    createDeck,
     deleteCard,
     updateCardDifficulty,
     getCardsForReview,
