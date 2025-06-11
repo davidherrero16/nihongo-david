@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import AddCardForm from "@/components/AddCardForm";
 import FlashCard from "@/components/FlashCard";
@@ -353,5 +354,3 @@ const Index = () => {
 };
 
 export default Index;
-
-</edits_to_apply>
