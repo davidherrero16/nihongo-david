@@ -105,26 +105,35 @@ const convertThousands = (num: number): string => {
 };
 
 export const generateRandomNumber = (min: number = 1, max: number = 9999999): number => {
-  // Create more variety by choosing random ranges with different digit counts
-  const maxDigits = max.toString().length;
-  
-  // Weight towards smaller numbers for more variety
+  // Create ranges with specific weights: 70% bigger numbers, 25% lower numbers, 5% for 1-100
   const ranges = [];
   
-  // Add single digits (1-9)
-  if (max >= 9) ranges.push({ min: 1, max: Math.min(9, max), weight: 3 });
+  // 5% chance for numbers 1-100
+  if (max >= 100) {
+    ranges.push({ min: 1, max: Math.min(100, max), weight: 5 });
+  }
   
-  // Add double digits (10-99)
-  if (max >= 99) ranges.push({ min: 10, max: Math.min(99, max), weight: 3 });
+  // 25% chance for lower numbers (101 to 10% of max, or up to 10,000)
+  const lowerThreshold = Math.min(Math.floor(max * 0.1), 10000);
+  if (max > 100 && lowerThreshold > 100) {
+    ranges.push({ min: 101, max: lowerThreshold, weight: 25 });
+  }
   
-  // Add triple digits (100-999)
-  if (max >= 999) ranges.push({ min: 100, max: Math.min(999, max), weight: 2 });
+  // 70% chance for bigger numbers (from 10% of max to max)
+  if (max > lowerThreshold) {
+    ranges.push({ min: lowerThreshold + 1, max: max, weight: 70 });
+  }
   
-  // Add 4 digits (1000-9999)
-  if (max >= 9999) ranges.push({ min: 1000, max: Math.min(9999, max), weight: 2 });
-  
-  // Add 5+ digits with lower weight
-  if (max >= 10000) ranges.push({ min: 10000, max: max, weight: 1 });
+  // If max is too small, adjust weights appropriately
+  if (max <= 100) {
+    ranges[0].weight = 100; // 100% for the only available range
+  } else if (max <= lowerThreshold) {
+    // Only small and lower ranges exist
+    const smallRange = ranges.find(r => r.max === 100);
+    const lowerRange = ranges.find(r => r.min === 101);
+    if (smallRange) smallRange.weight = 17; // ~17% for 1-100
+    if (lowerRange) lowerRange.weight = 83; // ~83% for 101-max
+  }
   
   // Calculate total weight
   const totalWeight = ranges.reduce((sum, range) => sum + range.weight, 0);
