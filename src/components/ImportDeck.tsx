@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileText, Download } from "lucide-react";
+import { Upload, FileText, Download, ClipboardPaste } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ImportDeckProps {
   onImport: (name: string, cards: any[]) => void;
@@ -14,6 +15,8 @@ interface ImportDeckProps {
 const ImportDeck = ({ onImport }: ImportDeckProps) => {
   const [deckName, setDeckName] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [pasteText, setPasteText] = useState("");
+  const [importMode, setImportMode] = useState<'file' | 'paste'>('file');
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,45 +95,110 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
     return cards;
   };
 
+  const parseDashFormat = (content: string): any[] => {
+    const lines = content.split('\n').filter(line => line.trim());
+    const cards = [];
+    
+    for (const line of lines) {
+      // Split by ' - ' (space-dash-space)
+      const parts = line.split(' - ');
+      if (parts.length >= 3) {
+        const word = parts[0].trim();
+        const reading = parts[1].trim();
+        const meaning = parts[2].trim();
+        
+        if (word && reading && meaning) {
+          cards.push({
+            word,
+            reading,
+            meaning
+          });
+        }
+      }
+    }
+    
+    return cards;
+  };
+
   const handleImport = async () => {
-    if (!file || !deckName.trim()) {
+    if (!deckName.trim()) {
       toast({
-        title: "Campos requeridos",
-        description: "Por favor ingresa un nombre para el deck y selecciona un archivo",
+        title: "Nombre requerido",
+        description: "Por favor ingresa un nombre para el deck",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (importMode === 'file' && !file) {
+      toast({
+        title: "Archivo requerido",
+        description: "Por favor selecciona un archivo",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (importMode === 'paste' && !pasteText.trim()) {
+      toast({
+        title: "Texto requerido",
+        description: "Por favor pega el texto con las tarjetas",
         variant: "destructive"
       });
       return;
     }
 
     try {
-      const content = await file.text();
+      let content = '';
+      
+      if (importMode === 'file' && file) {
+        content = await file.text();
+      } else {
+        content = pasteText;
+      }
+      
       let cards: any[] = [];
       
-      if (file.name.endsWith('.csv')) {
-        cards = parseCSV(content);
-      } else if (file.name.endsWith('.txt')) {
-        // Detectar si es formato Anki (separado por tabs) o CSV
-        if (content.includes('\t')) {
+      if (importMode === 'paste') {
+        // Try dash format first
+        cards = parseDashFormat(content);
+        
+        // If that didn't work, try tab-separated (Anki format)
+        if (cards.length === 0 && content.includes('\t')) {
           cards = parseAnkiTxt(content);
-        } else {
-          // Tratar como CSV con diferentes separadores
-          cards = parseCSV(content.replace(/\t/g, ','));
         }
-      } else if (file.name.endsWith('.json')) {
-        const jsonData = JSON.parse(content);
-        if (Array.isArray(jsonData)) {
-          cards = jsonData.map(item => ({
-            word: item.word || item.front || '',
-            reading: item.reading || item.pronunciation || '',
-            meaning: item.meaning || item.back || ''
-          }));
+        
+        // If still nothing, try CSV
+        if (cards.length === 0) {
+          cards = parseCSV(content);
+        }
+      } else if (file) {
+        if (file.name.endsWith('.csv')) {
+          cards = parseCSV(content);
+        } else if (file.name.endsWith('.txt')) {
+          // Detectar si es formato Anki (separado por tabs) o CSV
+          if (content.includes('\t')) {
+            cards = parseAnkiTxt(content);
+          } else {
+            // Tratar como CSV con diferentes separadores
+            cards = parseCSV(content.replace(/\t/g, ','));
+          }
+        } else if (file.name.endsWith('.json')) {
+          const jsonData = JSON.parse(content);
+          if (Array.isArray(jsonData)) {
+            cards = jsonData.map(item => ({
+              word: item.word || item.front || '',
+              reading: item.reading || item.pronunciation || '',
+              meaning: item.meaning || item.back || ''
+            }));
+          }
         }
       }
       
       if (cards.length === 0) {
         toast({
           title: "Error al importar",
-          description: "No se encontraron tarjetas válidas en el archivo",
+          description: "No se encontraron tarjetas válidas en el contenido",
           variant: "destructive"
         });
         return;
@@ -144,19 +212,20 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
       
       setDeckName("");
       setFile(null);
+      setPasteText("");
       if (document.querySelector('input[type="file"]')) {
         (document.querySelector('input[type="file"]') as HTMLInputElement).value = '';
       }
     } catch (error) {
       toast({
-        title: "Error al procesar archivo",
-        description: "Verifica que el formato del archivo sea correcto",
+        title: "Error al procesar contenido",
+        description: "Verifica que el formato sea correcto",
         variant: "destructive"
       });
     }
   };
 
-  const downloadTemplate = (format: 'csv' | 'json' | 'anki') => {
+  const downloadTemplate = (format: 'csv' | 'json' | 'anki' | 'dash') => {
     let content = '';
     let filename = '';
     let mimeType = '';
@@ -168,6 +237,10 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
     } else if (format === 'anki') {
       content = 'こんにちは\tkonnichiwa\thola\nありがとう\tarigatou\tgracias';
       filename = 'template_anki.txt';
+      mimeType = 'text/plain';
+    } else if (format === 'dash') {
+      content = 'こんにちは - konnichiwa - hola\nありがとう - arigatou - gracias';
+      filename = 'template_dash.txt';
       mimeType = 'text/plain';
     } else {
       content = JSON.stringify([
@@ -205,26 +278,64 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
             placeholder="Ej: Vocabulario N5"
           />
         </div>
-        
-        <div>
-          <Label htmlFor="file">Archivo (CSV, TXT de Anki, o JSON)</Label>
-          <Input
-            id="file"
-            type="file"
-            accept=".csv,.json,.txt"
-            onChange={handleFileChange}
-          />
+
+        <div className="flex gap-2 mb-4">
+          <Button
+            variant={importMode === 'file' ? 'default' : 'outline'}
+            onClick={() => setImportMode('file')}
+            size="sm"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Archivo
+          </Button>
+          <Button
+            variant={importMode === 'paste' ? 'default' : 'outline'}
+            onClick={() => setImportMode('paste')}
+            size="sm"
+          >
+            <ClipboardPaste className="h-4 w-4 mr-2" />
+            Copiar/Pegar
+          </Button>
         </div>
-        
-        {file && (
-          <div className="text-sm text-muted-foreground">
-            <FileText className="h-4 w-4 inline mr-1" />
-            {file.name}
+
+        {importMode === 'file' ? (
+          <>
+            <div>
+              <Label htmlFor="file">Archivo (CSV, TXT de Anki, o JSON)</Label>
+              <Input
+                id="file"
+                type="file"
+                accept=".csv,.json,.txt"
+                onChange={handleFileChange}
+              />
+            </div>
+            
+            {file && (
+              <div className="text-sm text-muted-foreground">
+                <FileText className="h-4 w-4 inline mr-1" />
+                {file.name}
+              </div>
+            )}
+          </>
+        ) : (
+          <div>
+            <Label htmlFor="pasteText">Texto (formato: palabra - lectura - significado)</Label>
+            <Textarea
+              id="pasteText"
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              placeholder="こんにちは - konnichiwa - hola&#10;ありがとう - arigatou - gracias"
+              rows={6}
+            />
           </div>
         )}
         
         <Button onClick={handleImport} className="w-full">
-          <Upload className="h-4 w-4 mr-2" />
+          {importMode === 'file' ? (
+            <Upload className="h-4 w-4 mr-2" />
+          ) : (
+            <ClipboardPaste className="h-4 w-4 mr-2" />
+          )}
           Importar Deck
         </Button>
         
@@ -250,6 +361,14 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
             <Button 
               variant="outline" 
               size="sm" 
+              onClick={() => downloadTemplate('dash')}
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Dash Format
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
               onClick={() => downloadTemplate('json')}
             >
               <Download className="h-4 w-4 mr-1" />
@@ -261,6 +380,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
         <div className="text-xs text-muted-foreground space-y-1">
           <p><strong>Formato CSV:</strong> word,reading,meaning</p>
           <p><strong>Formato Anki TXT:</strong> Los campos separados por tabulaciones (exportación de Anki)</p>
+          <p><strong>Formato Dash:</strong> palabra - lectura - significado (cada línea)</p>
           <p><strong>Formato JSON:</strong> [{"{"}"word": "...", "reading": "...", "meaning": "..."{"}"}, ...]</p>
           <div className="mt-2 p-2 bg-muted rounded text-xs">
             <strong>💡 Para exportar desde Anki:</strong><br/>

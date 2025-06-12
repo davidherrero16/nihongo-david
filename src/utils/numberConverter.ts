@@ -105,5 +105,42 @@ const convertThousands = (num: number): string => {
 };
 
 export const generateRandomNumber = (min: number = 1, max: number = 9999999): number => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  // Create more variety by choosing random ranges with different digit counts
+  const maxDigits = max.toString().length;
+  
+  // Weight towards smaller numbers for more variety
+  const ranges = [];
+  
+  // Add single digits (1-9)
+  if (max >= 9) ranges.push({ min: 1, max: Math.min(9, max), weight: 3 });
+  
+  // Add double digits (10-99)
+  if (max >= 99) ranges.push({ min: 10, max: Math.min(99, max), weight: 3 });
+  
+  // Add triple digits (100-999)
+  if (max >= 999) ranges.push({ min: 100, max: Math.min(999, max), weight: 2 });
+  
+  // Add 4 digits (1000-9999)
+  if (max >= 9999) ranges.push({ min: 1000, max: Math.min(9999, max), weight: 2 });
+  
+  // Add 5+ digits with lower weight
+  if (max >= 10000) ranges.push({ min: 10000, max: max, weight: 1 });
+  
+  // Calculate total weight
+  const totalWeight = ranges.reduce((sum, range) => sum + range.weight, 0);
+  
+  // Choose a random range based on weights
+  let randomWeight = Math.random() * totalWeight;
+  let selectedRange = ranges[0];
+  
+  for (const range of ranges) {
+    randomWeight -= range.weight;
+    if (randomWeight <= 0) {
+      selectedRange = range;
+      break;
+    }
+  }
+  
+  // Generate random number within selected range
+  return Math.floor(Math.random() * (selectedRange.max - selectedRange.min + 1)) + selectedRange.min;
 };
