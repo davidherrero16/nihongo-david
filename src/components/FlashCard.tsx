@@ -2,8 +2,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X, Volume2 } from "lucide-react";
 import type { Card as CardType } from "@/hooks/useCards";
+import { useSpeech } from "@/hooks/useSpeech";
 
 interface FlashCardProps {
   card: CardType;
@@ -15,9 +16,14 @@ interface FlashCardProps {
 
 const FlashCard = ({ card, onAnswer, onNext, onPrevious, showNavigation = true }: FlashCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const { speak, isSpeaking } = useSpeech();
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
+  };
+
+  const handleSpeak = () => {
+    speak(card.word);
   };
 
   const handleKnown = () => {
@@ -49,7 +55,21 @@ const FlashCard = ({ card, onAnswer, onNext, onPrevious, showNavigation = true }
           className="min-h-[300px] cursor-pointer transition-all duration-500 transform hover:scale-105 shadow-lg"
           onClick={handleFlip}
         >
-          <CardContent className="p-8 flex flex-col items-center justify-center min-h-[300px] text-center">
+          <CardContent className="p-8 flex flex-col items-center justify-center min-h-[300px] text-center relative">
+            {/* Speaker button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSpeak();
+              }}
+              disabled={isSpeaking}
+            >
+              <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
+            </Button>
+
             {!isFlipped ? (
               // Frente de la tarjeta
               <div className="space-y-4">
@@ -117,9 +137,21 @@ const FlashCard = ({ card, onAnswer, onNext, onPrevious, showNavigation = true }
               Anterior
             </Button>
             
-            <Button onClick={handleFlip} variant="secondary">
-              {isFlipped ? 'Ver Palabra' : 'Ver Significado'}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleSpeak}
+                variant="secondary"
+                size="sm"
+                disabled={isSpeaking}
+                className="flex items-center gap-2"
+              >
+                <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
+                Pronunciar
+              </Button>
+              <Button onClick={handleFlip} variant="secondary">
+                {isFlipped ? 'Ver Palabra' : 'Ver Significado'}
+              </Button>
+            </div>
             
             <Button 
               variant="outline" 

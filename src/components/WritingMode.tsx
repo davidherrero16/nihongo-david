@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, X, Eye, ArrowLeft, ArrowRight } from "lucide-react";
+import { Check, X, Eye, ArrowLeft, ArrowRight, Volume2 } from "lucide-react";
 import type { Card as CardType } from "@/hooks/useCards";
+import { useSpeech } from "@/hooks/useSpeech";
 
 interface WritingModeProps {
   card: CardType;
@@ -18,11 +19,16 @@ const WritingMode = ({ card, onAnswer, onNext, onPrevious, showNavigation = true
   const [userInput, setUserInput] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const { speak, isSpeaking } = useSpeech();
 
   const handleCheck = () => {
     const correct = userInput.trim().toLowerCase() === card.reading.toLowerCase();
     setIsCorrect(correct);
     setShowAnswer(true);
+  };
+
+  const handleSpeak = () => {
+    speak(card.word);
   };
 
   const handleKnown = () => {
@@ -54,10 +60,32 @@ const WritingMode = ({ card, onAnswer, onNext, onPrevious, showNavigation = true
   return (
     <div className="space-y-4">
       <Card className="min-h-[350px] shadow-lg">
-        <CardContent className="p-8 flex flex-col items-center justify-center min-h-[350px] text-center">
+        <CardContent className="p-8 flex flex-col items-center justify-center min-h-[350px] text-center relative">
+          {/* Speaker button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-4 right-4 text-muted-foreground hover:text-primary"
+            onClick={handleSpeak}
+            disabled={isSpeaking}
+          >
+            <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
+          </Button>
+
           <div className="space-y-6 w-full max-w-md">
-            <div className="text-4xl font-bold text-primary mb-4">
-              {card.word}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="text-4xl font-bold text-primary">
+                {card.word}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSpeak}
+                disabled={isSpeaking}
+                className="text-muted-foreground hover:text-primary"
+              >
+                <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
+              </Button>
             </div>
             
             <div className="text-lg text-muted-foreground mb-6">
@@ -138,13 +166,25 @@ const WritingMode = ({ card, onAnswer, onNext, onPrevious, showNavigation = true
             Anterior
           </Button>
           
-          <Button 
-            onClick={() => setShowAnswer(!showAnswer)} 
-            variant="secondary"
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            {showAnswer ? 'Ocultar' : 'Ver'} Respuesta
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleSpeak}
+              variant="secondary"
+              size="sm"
+              disabled={isSpeaking}
+              className="flex items-center gap-2"
+            >
+              <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
+              Pronunciar
+            </Button>
+            <Button 
+              onClick={() => setShowAnswer(!showAnswer)} 
+              variant="secondary"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              {showAnswer ? 'Ocultar' : 'Ver'} Respuesta
+            </Button>
+          </div>
           
           <Button 
             variant="outline" 
