@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 
 export interface Card {
@@ -11,6 +12,7 @@ export interface Card {
   nextReview: Date;
   reviewCount: number;
   hasBeenWrong: boolean; // Nueva propiedad para saber si alguna vez fue incorrecta
+  wasWrongInSession?: boolean; // Para controlar si fue incorrecta en la sesión actual
 }
 
 export interface Deck {
@@ -134,15 +136,24 @@ export const useDecks = () => {
           ...deck,
           cards: deck.cards.map(card => {
             if (card.id === cardId) {
-              const newDifficulty = known 
-                ? Math.min(10, card.difficulty + 1) // Ahora el máximo es 10
-                : Math.max(0, card.difficulty - 1);
+              let newDifficulty: number;
+              
+              if (known) {
+                // Si la tarjeta fue incorrecta en esta sesión, solo sube 0.5
+                const increment = card.wasWrongInSession ? 0.5 : 1;
+                newDifficulty = Math.min(10, card.difficulty + increment);
+              } else {
+                // Si es incorrecta, baja 1 nivel
+                newDifficulty = Math.max(0, card.difficulty - 1);
+              }
               
               const now = new Date();
               const nextReview = new Date(now);
-              // Nuevos intervalos para niveles 0-10
-              const intervals = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]; // días (Fibonacci)
-              const intervalDays = intervals[newDifficulty] || 89;
+              
+              // Intervalos basados en los niveles 0-10 (en días)
+              const intervals = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]; // Fibonacci
+              const intervalIndex = Math.floor(newDifficulty);
+              const intervalDays = intervals[intervalIndex] || 89;
               nextReview.setDate(now.getDate() + intervalDays);
 
               return {
@@ -151,7 +162,8 @@ export const useDecks = () => {
                 lastReviewed: now,
                 nextReview,
                 reviewCount: card.reviewCount + 1,
-                hasBeenWrong: card.hasBeenWrong || !known // Marcar si alguna vez fue incorrecta
+                hasBeenWrong: card.hasBeenWrong || !known,
+                wasWrongInSession: known ? false : true // Reset o marcar según la respuesta
               };
             }
             return card;
@@ -160,6 +172,21 @@ export const useDecks = () => {
       }
       return deck;
     }));
+  };
+
+  // Función para resetear las marcas de sesión
+  const resetSessionMarks = (deckId: string) => {
+    setDecks(prev => prev.map(deck => 
+      deck.id === deckId 
+        ? {
+            ...deck,
+            cards: deck.cards.map(card => ({
+              ...card,
+              wasWrongInSession: false
+            }))
+          }
+        : deck
+    ));
   };
 
   const resetProgress = (deckId: string) => {
@@ -174,7 +201,8 @@ export const useDecks = () => {
               lastReviewed: now,
               nextReview: now,
               reviewCount: 0,
-              hasBeenWrong: false
+              hasBeenWrong: false,
+              wasWrongInSession: false
             }))
           }
         : deck
@@ -248,6 +276,7 @@ export const useDecks = () => {
     importDeck,
     deleteDeck,
     getAllCards,
-    getDeckStats
+    getDeckStats,
+    resetSessionMarks
   };
 };

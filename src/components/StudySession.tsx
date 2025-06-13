@@ -14,6 +14,7 @@ interface StudySessionProps {
   onUpdateCard: (cardId: string, known: boolean) => void;
   studyMode: 'easy' | 'hard';
   deckId: string;
+  onResetSessionMarks: () => void;
 }
 
 interface SessionResult {
@@ -22,11 +23,13 @@ interface SessionResult {
   card: CardType;
 }
 
-const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, deckId }: StudySessionProps) => {
+const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, deckId, onResetSessionMarks }: StudySessionProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
   const [showSummary, setShowSummary] = useState(false);
-  const [sessionCards, setSessionCards] = useState<CardType[]>(cards.slice(0, packSize));
+  const [sessionCards, setSessionCards] = useState<CardType[]>(
+    cards.slice(0, packSize).map(card => ({ ...card, wasWrongInSession: false }))
+  );
   const [processedCards, setProcessedCards] = useState<Set<string>>(new Set());
 
   const currentCard = sessionCards[currentIndex];
@@ -34,6 +37,15 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
 
   const handleAnswer = (known: boolean) => {
     if (!currentCard) return;
+
+    // Marcar la tarjeta como incorrecta en sesión si es necesario
+    if (!known) {
+      setSessionCards(prev => prev.map(card => 
+        card.id === currentCard.id 
+          ? { ...card, wasWrongInSession: true }
+          : card
+      ));
+    }
 
     // Guardar resultado de la sesión
     const result: SessionResult = {
@@ -89,11 +101,13 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   };
 
   const handleFinishSession = () => {
+    // Resetear las marcas de sesión al finalizar
+    onResetSessionMarks();
     setShowSummary(false);
     setCurrentIndex(0);
     setSessionResults([]);
     setProcessedCards(new Set());
-    setSessionCards(cards.slice(0, packSize));
+    setSessionCards(cards.slice(0, packSize).map(card => ({ ...card, wasWrongInSession: false })));
     onComplete();
   };
 
@@ -104,8 +118,8 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
       return;
     }
 
-    // Reiniciar con las tarjetas falladas
-    setSessionCards(failedCards.map(result => result.card));
+    // Reiniciar con las tarjetas falladas, manteniendo su estado de sesión
+    setSessionCards(failedCards.map(result => ({ ...result.card, wasWrongInSession: true })));
     setCurrentIndex(0);
     setSessionResults([]);
     setShowSummary(false);

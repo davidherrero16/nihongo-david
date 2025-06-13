@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import AddCardForm from "@/components/AddCardForm";
 import FlashCard from "@/components/FlashCard";
@@ -14,7 +15,7 @@ import ImportDeck from "@/components/ImportDeck";
 import KanaExercise from "@/components/KanaExercise";
 
 const Index = () => {
-  const { decks, addCard, createDeck, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress, importDeck, deleteDeck, getDeckStats } = useDecks();
+  const { decks, addCard, createDeck, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress, importDeck, deleteDeck, getDeckStats, resetSessionMarks } = useDecks();
   const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'import' | 'kana' | 'session'>('study');
   const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -133,6 +134,7 @@ const Index = () => {
             onUpdateCard={(cardId, known) => updateCardDifficulty(cardId, known, currentDeckId)}
             studyMode={studyMode}
             deckId={currentDeckId}
+            onResetSessionMarks={() => resetSessionMarks(currentDeckId)}
           />
         )}
 
