@@ -6,10 +6,11 @@ export interface Card {
   reading: string;
   meaning: string;
   createdAt: Date;
-  difficulty: number;
+  difficulty: number; // 0-10, donde 0 es muy difícil y 10 es muy fácil
   lastReviewed: Date;
   nextReview: Date;
   reviewCount: number;
+  hasBeenWrong: boolean; // Nueva propiedad para saber si alguna vez fue incorrecta
 }
 
 export interface Deck {
@@ -35,7 +36,8 @@ export const useDecks = () => {
             ...card,
             createdAt: new Date(card.createdAt),
             lastReviewed: new Date(card.lastReviewed),
-            nextReview: new Date(card.nextReview)
+            nextReview: new Date(card.nextReview),
+            hasBeenWrong: card.hasBeenWrong || false // Migrar tarjetas existentes
           }))
         }));
         setDecks(parsedDecks);
@@ -49,7 +51,8 @@ export const useDecks = () => {
               ...card,
               createdAt: new Date(card.createdAt),
               lastReviewed: new Date(card.lastReviewed),
-              nextReview: new Date(card.nextReview)
+              nextReview: new Date(card.nextReview),
+              hasBeenWrong: false
             }));
             const defaultDeck: Deck = {
               id: 'default',
@@ -93,7 +96,8 @@ export const useDecks = () => {
       difficulty: 0,
       lastReviewed: now,
       nextReview: now,
-      reviewCount: 0
+      reviewCount: 0,
+      hasBeenWrong: false
     };
     
     setDecks(prev => prev.map(deck => 
@@ -131,13 +135,14 @@ export const useDecks = () => {
           cards: deck.cards.map(card => {
             if (card.id === cardId) {
               const newDifficulty = known 
-                ? Math.min(5, card.difficulty + 1)
+                ? Math.min(10, card.difficulty + 1) // Ahora el máximo es 10
                 : Math.max(0, card.difficulty - 1);
               
               const now = new Date();
               const nextReview = new Date(now);
-              const intervals = [1, 2, 4, 8, 16, 32];
-              const intervalDays = intervals[newDifficulty] || 32;
+              // Nuevos intervalos para niveles 0-10
+              const intervals = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]; // días (Fibonacci)
+              const intervalDays = intervals[newDifficulty] || 89;
               nextReview.setDate(now.getDate() + intervalDays);
 
               return {
@@ -145,7 +150,8 @@ export const useDecks = () => {
                 difficulty: newDifficulty,
                 lastReviewed: now,
                 nextReview,
-                reviewCount: card.reviewCount + 1
+                reviewCount: card.reviewCount + 1,
+                hasBeenWrong: card.hasBeenWrong || !known // Marcar si alguna vez fue incorrecta
               };
             }
             return card;
@@ -167,14 +173,15 @@ export const useDecks = () => {
               difficulty: 0,
               lastReviewed: now,
               nextReview: now,
-              reviewCount: 0
+              reviewCount: 0,
+              hasBeenWrong: false
             }))
           }
         : deck
     ));
   };
 
-  const importDeck = (name: string, cards: Omit<Card, 'id' | 'createdAt' | 'difficulty' | 'lastReviewed' | 'nextReview' | 'reviewCount'>[]) => {
+  const importDeck = (name: string, cards: Omit<Card, 'id' | 'createdAt' | 'difficulty' | 'lastReviewed' | 'nextReview' | 'reviewCount' | 'hasBeenWrong'>[]) => {
     const now = new Date();
     const newDeck: Deck = {
       id: Date.now().toString(),
@@ -188,7 +195,8 @@ export const useDecks = () => {
         difficulty: 0,
         lastReviewed: now,
         nextReview: now,
-        reviewCount: 0
+        reviewCount: 0,
+        hasBeenWrong: false
       }))
     };
     setDecks(prev => [...prev, newDeck]);
@@ -214,6 +222,19 @@ export const useDecks = () => {
     });
   };
 
+  // Nueva función para obtener estadísticas del deck
+  const getDeckStats = (deckId: string) => {
+    const deck = decks.find(d => d.id === deckId);
+    if (!deck) return { nuevas: 0, revisar: 0, aprendidas: 0, porAprender: 0 };
+
+    const nuevas = deck.cards.filter(card => card.reviewCount === 0).length;
+    const revisar = deck.cards.filter(card => card.hasBeenWrong && card.difficulty < 5).length;
+    const aprendidas = deck.cards.filter(card => card.difficulty >= 5).length;
+    const porAprender = deck.cards.length - aprendidas;
+
+    return { nuevas, revisar, aprendidas, porAprender };
+  };
+
   const getAllCards = () => decks.flatMap(deck => deck.cards);
 
   return {
@@ -226,6 +247,7 @@ export const useDecks = () => {
     resetProgress,
     importDeck,
     deleteDeck,
-    getAllCards
+    getAllCards,
+    getDeckStats
   };
 };

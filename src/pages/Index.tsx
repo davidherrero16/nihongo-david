@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import AddCardForm from "@/components/AddCardForm";
 import FlashCard from "@/components/FlashCard";
@@ -6,6 +5,7 @@ import WritingMode from "@/components/WritingMode";
 import CardList from "@/components/CardList";
 import StudySession from "@/components/StudySession";
 import DeckSelector from "@/components/DeckSelector";
+import DeckStats from "@/components/DeckStats";
 import { useDecks } from "@/hooks/useDecks";
 import { Button } from "@/components/ui/button";
 import { Plus, BookOpen, List, Brain, PenTool, Calculator, FileDown, Settings } from "lucide-react";
@@ -14,7 +14,7 @@ import ImportDeck from "@/components/ImportDeck";
 import KanaExercise from "@/components/KanaExercise";
 
 const Index = () => {
-  const { decks, addCard, createDeck, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress, importDeck, deleteDeck } = useDecks();
+  const { decks, addCard, createDeck, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress, importDeck, deleteDeck, getDeckStats } = useDecks();
   const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'import' | 'kana' | 'session'>('study');
   const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -24,6 +24,7 @@ const Index = () => {
   const reviewCards = getCardsForReview(currentDeckId);
   const currentDeck = decks.find(deck => deck.id === currentDeckId);
   const currentCards = reviewCards.length > 0 ? reviewCards : (currentDeck?.cards || []);
+  const deckStats = getDeckStats(currentDeckId);
 
   const nextCard = () => {
     if (currentCards.length > 0) {
@@ -153,6 +154,11 @@ const Index = () => {
                 }}
               />
             </div>
+
+            {/* Estadísticas del deck */}
+            {currentDeck && currentDeck.cards.length > 0 && (
+              <DeckStats stats={deckStats} />
+            )}
 
             {currentDeck && currentDeck.cards.length > 0 ? (
               <div className="space-y-6">
