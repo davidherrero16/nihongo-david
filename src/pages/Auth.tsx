@@ -13,10 +13,20 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberEmail, setRememberEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Cargar email guardado al inicializar
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberEmail(true);
+    }
+  }, []);
 
   // Redirigir si ya está autenticado
   useEffect(() => {
@@ -41,8 +51,20 @@ const Auth = () => {
           description: error.message,
           variant: "destructive",
         });
+      } else {
+        // Guardar o eliminar email según la preferencia
+        if (rememberEmail) {
+          localStorage.setItem('rememberedEmail', email);
+        } else {
+          localStorage.removeItem('rememberedEmail');
+        }
+
+        toast({
+          title: "¡Bienvenido!",
+          description: "Sesión iniciada correctamente",
+          className: "animate-slide-in",
+        });
       }
-      // No mostramos toast de éxito aquí porque la redirección será automática
     } catch (error) {
       toast({
         title: "Error",
@@ -58,7 +80,7 @@ const Auth = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center animate-fade-in">
           <BookOpen className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
           <p className="text-muted-foreground">Cargando...</p>
         </div>
@@ -68,19 +90,19 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md animate-scale-in shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <BookOpen className="h-12 w-12 text-primary" />
+            <BookOpen className="h-12 w-12 text-primary animate-bounce-subtle" />
           </div>
-          <CardTitle className="text-2xl">Tarjetas Japonés</CardTitle>
-          <p className="text-muted-foreground">
+          <CardTitle className="text-2xl animate-fade-in-up">Tarjetas Japonés</CardTitle>
+          <p className="text-muted-foreground animate-fade-in-up delay-100">
             Inicia sesión para acceder a tu colección
           </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2 animate-fade-in-up delay-200">
               <label htmlFor="email" className="text-sm font-medium">
                 Email
               </label>
@@ -91,9 +113,10 @@ const Auth = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
                 required
+                className="transition-all duration-200 focus:scale-[1.02] focus:shadow-md"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 animate-fade-in-up delay-300">
               <label htmlFor="password" className="text-sm font-medium">
                 Contraseña
               </label>
@@ -105,12 +128,13 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  className="transition-all duration-200 focus:scale-[1.02] focus:shadow-md"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent transition-transform hover:scale-110"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -121,8 +145,31 @@ const Auth = () => {
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+            <div className="flex items-center space-x-2 animate-fade-in-up delay-400">
+              <input
+                type="checkbox"
+                id="remember"
+                checked={rememberEmail}
+                onChange={(e) => setRememberEmail(e.target.checked)}
+                className="rounded border-gray-300 text-primary focus:ring-primary transition-transform hover:scale-110"
+              />
+              <label htmlFor="remember" className="text-sm text-gray-600">
+                Recordar email
+              </label>
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full animate-fade-in-up delay-500 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-95" 
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                  Iniciando sesión...
+                </span>
+              ) : (
+                "Iniciar Sesión"
+              )}
             </Button>
           </form>
         </CardContent>
