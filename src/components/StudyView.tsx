@@ -1,0 +1,198 @@
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Brain, PenTool, Settings } from "lucide-react";
+import { Card, Deck } from "@/hooks/useSupabaseDecks";
+import DeckSelector from "@/components/DeckSelector";
+import DeckStats from "@/components/DeckStats";
+import FlashCard from "@/components/FlashCard";
+import WritingMode from "@/components/WritingMode";
+import EmptyState from "@/components/EmptyState";
+
+interface StudyViewProps {
+  decks: Deck[];
+  currentDeckId: string;
+  onSelectDeck: (deckId: string) => void;
+  onCreateDeck: (name: string) => Promise<void>;
+  reviewCards: Card[];
+  currentDeck: Deck | undefined;
+  deckStats: { nuevas: number; revisar: number; aprendidas: number; porAprender: number };
+  onStartSession: () => void;
+  onAddCard: () => void;
+  onAnswer: (known: boolean) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  currentCards: Card[];
+  currentCardIndex: number;
+}
+
+const StudyView = ({
+  decks,
+  currentDeckId,
+  onSelectDeck,
+  onCreateDeck,
+  reviewCards,
+  currentDeck,
+  deckStats,
+  onStartSession,
+  onAddCard,
+  onAnswer,
+  onNext,
+  onPrevious,
+  currentCards,
+  currentCardIndex
+}: StudyViewProps) => {
+  const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
+  const [packSize, setPackSize] = useState<10 | 15>(10);
+
+  if (!currentDeck || currentDeck.cards.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <DeckSelector
+            decks={decks}
+            currentDeckId={currentDeckId}
+            onSelectDeck={(deckId) => {
+              onSelectDeck(deckId);
+            }}
+            onCreateDeck={onCreateDeck}
+          />
+        </div>
+        <EmptyState onAddCard={onAddCard} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      {/* Selector de deck */}
+      <div className="mb-6">
+        <DeckSelector
+          decks={decks}
+          currentDeckId={currentDeckId}
+          onSelectDeck={(deckId) => {
+            onSelectDeck(deckId);
+          }}
+          onCreateDeck={onCreateDeck}
+        />
+      </div>
+
+      {/* Estadísticas del deck */}
+      <DeckStats stats={deckStats} />
+
+      <div className="space-y-6">
+        {/* Configuración de sesión */}
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
+          <div className="flex justify-center gap-2">
+            <Button
+              variant={studyMode === 'easy' ? 'default' : 'outline'}
+              onClick={() => setStudyMode('easy')}
+              size="sm"
+            >
+              <Brain className="h-4 w-4 mr-2" />
+              Modo Fácil
+            </Button>
+            <Button
+              variant={studyMode === 'hard' ? 'default' : 'outline'}
+              onClick={() => setStudyMode('hard')}
+              size="sm"
+            >
+              <PenTool className="h-4 w-4 mr-2" />
+              Modo Difícil
+            </Button>
+          </div>
+          
+          <div className="flex justify-center gap-2">
+            <Button
+              variant={packSize === 10 ? 'default' : 'outline'}
+              onClick={() => setPackSize(10)}
+              size="sm"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Pack 10
+            </Button>
+            <Button
+              variant={packSize === 15 ? 'default' : 'outline'}
+              onClick={() => setPackSize(15)}
+              size="sm"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Pack 15
+            </Button>
+          </div>
+        </div>
+
+        {/* Información de tarjetas disponibles */}
+        <div className="text-center mb-6">
+          <div className="mb-4">
+            {reviewCards.length > 0 ? (
+              <p className="text-lg text-blue-600 font-medium">
+                📚 {Math.min(reviewCards.length, packSize)} tarjetas listas para revisar
+              </p>
+            ) : (
+              <p className="text-lg text-green-600 font-medium">
+                ✅ No hay tarjetas pendientes de revisión
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Total en este mazo: {currentDeck.cards.length} tarjetas
+            </p>
+          </div>
+
+          <Button 
+            onClick={onStartSession}
+            size="lg"
+            className="text-lg px-8 py-3"
+            disabled={currentCards.length === 0}
+          >
+            <Brain className="h-5 w-5 mr-2" />
+            Comenzar Sesión ({Math.min(currentCards.length, packSize)} tarjetas)
+          </Button>
+        </div>
+
+        {/* Modo de estudio individual (legacy) */}
+        <div className="pt-8 border-t border-muted">
+          <h3 className="text-lg font-medium text-center mb-4 text-muted-foreground">
+            O estudia tarjeta por tarjeta
+          </h3>
+          
+          {/* Información de progreso */}
+          <div className="text-center mb-4">
+            <p className="text-muted-foreground mb-2">
+              Tarjeta {currentCardIndex + 1} de {currentCards.length}
+            </p>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all duration-300"
+                style={{ width: `${((currentCardIndex + 1) / currentCards.length) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Tarjeta de estudio */}
+          {currentCards.length > 0 && (
+            studyMode === 'easy' ? (
+              <FlashCard 
+                card={currentCards[currentCardIndex]} 
+                onAnswer={onAnswer}
+                onNext={onNext}
+                onPrevious={onPrevious}
+                showNavigation={currentCards.length > 1}
+              />
+            ) : (
+              <WritingMode 
+                card={currentCards[currentCardIndex]} 
+                onAnswer={onAnswer}
+                onNext={onNext}
+                onPrevious={onPrevious}
+                showNavigation={currentCards.length > 1}
+              />
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StudyView;
