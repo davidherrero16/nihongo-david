@@ -1,4 +1,3 @@
-
 const numberMap = {
   0: '',
   1: 'いち',
@@ -104,7 +103,7 @@ const convertThousands = (num: number): string => {
   return result;
 };
 
-export const generateRandomNumber = (min: number = 1, max: number = 9999999): number => {
+export const generateRandomNumber = (min: number = 1, max: number = 99999999): number => {
   // Create ranges with specific weights: 70% bigger numbers, 25% lower numbers, 5% for 1-100
   const ranges = [];
   

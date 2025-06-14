@@ -145,7 +145,9 @@ const NumberExercise = () => {
     { value: 10000, label: "1-10,000" },
     { value: 100000, label: "1-100,000" },
     { value: 1000000, label: "1-1,000,000" },
-    { value: 9999999, label: "1-9,999,999" }
+    { value: 10000000, label: "1-10,000,000" },
+    { value: 50000000, label: "1-50,000,000" },
+    { value: 99999999, label: "1-99,999,999" }
   ];
 
   return (
@@ -256,7 +258,7 @@ const NumberExercise = () => {
                       </div>
                       <div>
                         <span className="text-sm font-medium text-gray-600">Respuesta correcta: </span>
-                        <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+                        <span className="text-lg font-semibold bg-gray-100 px-3 py-1 rounded-md border text-gray-900">
                           {feedback.correctAnswer}
                         </span>
                       </div>
