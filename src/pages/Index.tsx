@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSupabaseDecks } from "@/hooks/useSupabaseDecks";
+import { useStatistics } from "@/hooks/useStatistics";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -13,6 +14,7 @@ import NumberExercise from "@/components/NumberExercise";
 import KanaExercise from "@/components/KanaExercise";
 import WelcomeMessage from "@/components/WelcomeMessage";
 import ProfileView from "@/components/ProfileView";
+import StatsView from "@/components/StatsView";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -33,9 +35,13 @@ const Index = () => {
     resetSessionMarks 
   } = useSupabaseDecks();
 
-  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'kana' | 'session' | 'profile' | 'import'>('study');
+  const { addStudySession } = useStatistics();
+
+  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'kana' | 'session' | 'profile' | 'stats'>('study');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [currentDeckId, setCurrentDeckId] = useState<string>('');
+  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  const [sessionStats, setSessionStats] = useState({ correct: 0, total: 0 });
 
   // Establecer el primer deck como actual cuando se carguen
   useEffect(() => {
@@ -87,16 +93,40 @@ const Index = () => {
   const handleAnswer = (known: boolean) => {
     if (currentCards.length > 0) {
       updateCardDifficulty(currentCards[currentCardIndex].id, known, currentDeckId);
+      
+      // Actualizar estadísticas de sesión
+      setSessionStats(prev => ({
+        correct: prev.correct + (known ? 1 : 0),
+        total: prev.total + 1
+      }));
     }
   };
 
   const handleStartSession = () => {
+    setSessionStartTime(new Date());
+    setSessionStats({ correct: 0, total: 0 });
     setCurrentView('session');
   };
 
-  const handleCompleteSession = () => {
+  const handleCompleteSession = (finalStats: { correct: number; total: number }) => {
+    // Registrar sesión en estadísticas si hay datos
+    if (sessionStartTime && finalStats.total > 0) {
+      const timeSpent = Math.round((new Date().getTime() - sessionStartTime.getTime()) / 1000 / 60); // en minutos
+      const currentDeck = decks.find(d => d.id === currentDeckId);
+      
+      addStudySession({
+        cardsStudied: finalStats.total,
+        correctAnswers: finalStats.correct,
+        timeSpent: Math.max(1, timeSpent), // mínimo 1 minuto
+        deckId: currentDeckId,
+        deckName: currentDeck?.name || 'Desconocido'
+      });
+    }
+    
     setCurrentView('study');
     setCurrentCardIndex(0);
+    setSessionStartTime(null);
+    setSessionStats({ correct: 0, total: 0 });
   };
 
   const handleSelectDeck = (deckId: string) => {
@@ -169,7 +199,14 @@ const Index = () => {
             cards={currentCards}
             packSize={10}
             onComplete={handleCompleteSession}
-            onUpdateCard={(cardId, known) => updateCardDifficulty(cardId, known, currentDeckId)}
+            onUpdateCard={(cardId, known) => {
+              updateCardDifficulty(cardId, known, currentDeckId);
+              // Actualizar estadísticas locales de sesión
+              setSessionStats(prev => ({
+                correct: prev.correct + (known ? 1 : 0),
+                total: prev.total + 1
+              }));
+            }}
             studyMode="easy"
             deckId={currentDeckId}
             onResetSessionMarks={() => resetSessionMarks(currentDeckId)}
@@ -181,6 +218,8 @@ const Index = () => {
         {currentView === 'kana' && <KanaExercise />}
 
         {currentView === 'profile' && <ProfileView />}
+
+        {currentView === 'stats' && <StatsView />}
 
         {currentView === 'add' && (
           <AddCardView

@@ -80,13 +80,12 @@ export const useSupabaseDecks = () => {
 
       console.log(`Cargados ${decksData?.length || 0} mazos`);
 
-      // Cargar todas las tarjetas en una sola consulta más eficiente
+      // Cargar todas las tarjetas sin límite
       const { data: allCards, error: cardsError } = await supabase
         .from('cards')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: true })
-        .abortSignal(abortControllerRef.current.signal);
+        .order('created_at', { ascending: true });
 
       if (cardsError) {
         console.error('Error cargando tarjetas:', cardsError);
@@ -539,7 +538,7 @@ export const useSupabaseDecks = () => {
 
       console.log('Deck creado:', deckData.id);
 
-      const batchSize = 25; // Reducir el tamaño del lote para mejor estabilidad
+      const batchSize = 50; // Incrementar el tamaño del lote para mejor rendimiento
       const now = new Date();
       let totalInserted = 0;
 
@@ -576,9 +575,9 @@ export const useSupabaseDecks = () => {
           totalInserted += insertedCards?.length || 0;
           console.log(`Lote insertado exitosamente. Total insertadas: ${totalInserted}`);
 
-          // Pausa más larga entre lotes para evitar problemas de red
+          // Pausa más corta entre lotes para mejor rendimiento
           if (i + batchSize < cards.length) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 200));
           }
         } catch (batchError: any) {
           console.error(`Error en lote ${Math.floor(i/batchSize) + 1}:`, batchError);

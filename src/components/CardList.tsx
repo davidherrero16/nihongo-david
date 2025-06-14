@@ -28,12 +28,14 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
   const getDifficultyColor = (difficulty: number) => {
     if (difficulty <= 1) return "bg-red-100 text-red-800";
     if (difficulty <= 3) return "bg-yellow-100 text-yellow-800";
+    if (difficulty <= 6) return "bg-blue-100 text-blue-800";
     return "bg-green-100 text-green-800";
   };
 
   const getDifficultyText = (difficulty: number) => {
-    if (difficulty <= 1) return "Difícil";
-    if (difficulty <= 3) return "Medio";
+    if (difficulty <= 1) return "Muy Difícil";
+    if (difficulty <= 3) return "Difícil";
+    if (difficulty <= 6) return "Medio";
     return "Fácil";
   };
 
@@ -131,6 +133,9 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
                     <p className="text-sm text-muted-foreground">{card.reading}</p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs px-2 py-1">
+                      Nivel {card.difficulty}
+                    </Badge>
                     <Badge variant="secondary" className={getDifficultyColor(card.difficulty)}>
                       {getDifficultyText(card.difficulty)}
                     </Badge>
