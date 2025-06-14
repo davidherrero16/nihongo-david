@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
@@ -318,6 +317,8 @@ export const useSupabaseDecks = () => {
     if (!user) return '';
 
     try {
+      console.log(`Iniciando importación de ${cards.length} tarjetas`);
+      
       // Crear el deck
       const { data: deckData, error: deckError } = await supabase
         .from('decks')
@@ -329,35 +330,58 @@ export const useSupabaseDecks = () => {
         .select()
         .single();
 
-      if (deckError) throw deckError;
+      if (deckError) {
+        console.error('Error creando deck:', deckError);
+        throw deckError;
+      }
 
-      // Crear las tarjetas
+      console.log('Deck creado:', deckData.id);
+
+      // Dividir las tarjetas en lotes más pequeños para evitar timeouts
+      const batchSize = 100;
       const now = new Date();
-      const cardsToInsert = cards.map(card => ({
-        deck_id: deckData.id,
-        user_id: user.id,
-        word: card.word,
-        reading: card.reading,
-        meaning: card.meaning,
-        difficulty: 0,
-        last_reviewed: now.toISOString(),
-        next_review: now.toISOString(),
-        review_count: 0,
-        has_been_wrong: false,
-        was_wrong_in_session: false
-      }));
+      let totalInserted = 0;
 
-      const { error: cardsError } = await supabase
-        .from('cards')
-        .insert(cardsToInsert);
+      for (let i = 0; i < cards.length; i += batchSize) {
+        const batch = cards.slice(i, i + batchSize);
+        
+        const cardsToInsert = batch.map(card => ({
+          deck_id: deckData.id,
+          user_id: user.id,
+          word: card.word || '',
+          reading: card.reading || '',
+          meaning: card.meaning || '',
+          difficulty: 0,
+          last_reviewed: now.toISOString(),
+          next_review: now.toISOString(),
+          review_count: 0,
+          has_been_wrong: false,
+          was_wrong_in_session: false
+        }));
 
-      if (cardsError) throw cardsError;
+        console.log(`Insertando lote ${Math.floor(i/batchSize) + 1} de ${Math.ceil(cards.length/batchSize)}: ${cardsToInsert.length} tarjetas`);
+
+        const { error: cardsError, data: insertedCards } = await supabase
+          .from('cards')
+          .insert(cardsToInsert)
+          .select();
+
+        if (cardsError) {
+          console.error('Error insertando tarjetas:', cardsError);
+          throw cardsError;
+        }
+
+        totalInserted += insertedCards?.length || 0;
+        console.log(`Lote insertado exitosamente. Total insertadas: ${totalInserted}`);
+      }
+
+      console.log(`Importación completada: ${totalInserted} tarjetas`);
 
       await loadDecks(); // Recargar datos
       
       toast({
         title: "Mazo importado",
-        description: `Se importó "${name}" con ${cards.length} tarjetas`,
+        description: `Se importó "${name}" con ${totalInserted} tarjetas`,
       });
 
       return deckData.id;
@@ -365,7 +389,7 @@ export const useSupabaseDecks = () => {
       console.error('Error importing deck:', error);
       toast({
         title: "Error",
-        description: "No se pudo importar el mazo",
+        description: `No se pudo importar el mazo: ${error.message}`,
         variant: "destructive",
       });
       return '';
