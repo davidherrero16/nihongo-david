@@ -1,17 +1,23 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Sparkles } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
 
-interface WelcomeMessageProps {
-  userName?: string;
-}
-
-const WelcomeMessage = ({ userName }: WelcomeMessageProps) => {
+const WelcomeMessage = () => {
+  const { profile } = useProfile();
+  
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "¡Buenos días!";
     if (hour < 18) return "¡Buenas tardes!";
     return "¡Buenas noches!";
+  };
+
+  const getUserName = () => {
+    if (profile?.display_name) {
+      return profile.display_name;
+    }
+    return "";
   };
 
   return (
@@ -27,7 +33,7 @@ const WelcomeMessage = ({ userName }: WelcomeMessageProps) => {
               {getGreeting()}
             </h2>
             <p className="text-sm sm:text-base text-blue-700">
-              Bienvenido{userName ? ` ${userName}` : ""} a tu app de estudio de japonés
+              Bienvenido{getUserName() ? ` ${getUserName()}` : ""} a tu app de estudio de japonés
             </p>
           </div>
         </div>

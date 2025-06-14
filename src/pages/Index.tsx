@@ -12,6 +12,7 @@ import StudySession from "@/components/StudySession";
 import NumberExercise from "@/components/NumberExercise";
 import KanaExercise from "@/components/KanaExercise";
 import WelcomeMessage from "@/components/WelcomeMessage";
+import ProfileView from "@/components/ProfileView";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -32,7 +33,7 @@ const Index = () => {
     resetSessionMarks 
   } = useSupabaseDecks();
 
-  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'import' | 'kana' | 'session'>('study');
+  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'import' | 'kana' | 'session' | 'profile'>('study');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [currentDeckId, setCurrentDeckId] = useState<string>('');
 
@@ -134,7 +135,7 @@ const Index = () => {
       <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full">
         {currentView === 'study' && (
           <>
-            <WelcomeMessage userName={user?.email?.split('@')[0]} />
+            <WelcomeMessage />
             <StudyView
               decks={decks}
               currentDeckId={currentDeckId}
@@ -169,6 +170,8 @@ const Index = () => {
         {currentView === 'numbers' && <NumberExercise />}
         
         {currentView === 'kana' && <KanaExercise />}
+
+        {currentView === 'profile' && <ProfileView />}
 
         {currentView === 'add' && (
           <AddCardView

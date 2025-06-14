@@ -1,51 +1,115 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Check, X, RefreshCw, Settings } from "lucide-react";
-import { convertNumberToHiragana, generateRandomNumber } from "@/utils/numberConverter";
-
-type ExerciseMode = 'number-to-hiragana' | 'hiragana-to-number';
+import { Badge } from "@/components/ui/badge";
+import { Calculator, RotateCcw, CheckCircle, XCircle } from "lucide-react";
+import { numberToJapanese, japaneseToNumber } from "@/utils/numberConverter";
 
 const NumberExercise = () => {
-  const [mode, setMode] = useState<ExerciseMode>('number-to-hiragana');
-  const [currentNumber, setCurrentNumber] = useState(generateRandomNumber());
+  const [currentNumber, setCurrentNumber] = useState<number>(0);
   const [userAnswer, setUserAnswer] = useState("");
-  const [showResult, setShowResult] = useState(false);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [mode, setMode] = useState<'toJapanese' | 'toNumber'>('toJapanese');
   const [score, setScore] = useState({ correct: 0, total: 0 });
-  const [maxNumber, setMaxNumber] = useState(9999999);
+  const [feedback, setFeedback] = useState<{
+    show: boolean;
+    isCorrect: boolean;
+    correctAnswer: string;
+    userAnswer: string;
+    comparison?: Array<{ char: string; isCorrect: boolean }>;
+  }>({ show: false, isCorrect: false, correctAnswer: "", userAnswer: "" });
 
-  const currentHiragana = convertNumberToHiragana(currentNumber);
-
-  const handleSubmit = () => {
-    let correct = false;
-    
-    if (mode === 'number-to-hiragana') {
-      correct = userAnswer.trim() === currentHiragana;
-    } else {
-      const userNumber = parseInt(userAnswer.trim());
-      correct = !isNaN(userNumber) && userNumber === currentNumber;
-    }
-    
-    setIsCorrect(correct);
-    setShowResult(true);
-    setScore(prev => ({
-      correct: prev.correct + (correct ? 1 : 0),
-      total: prev.total + 1
-    }));
+  const generateRandomNumber = () => {
+    return Math.floor(Math.random() * 9999) + 1;
   };
 
-  const handleNext = () => {
-    setCurrentNumber(generateRandomNumber(1, maxNumber));
+  const generateNewQuestion = () => {
+    setCurrentNumber(generateRandomNumber());
     setUserAnswer("");
-    setShowResult(false);
-    setIsCorrect(null);
+    setFeedback({ show: false, isCorrect: false, correctAnswer: "", userAnswer: "" });
+  };
+
+  useEffect(() => {
+    generateNewQuestion();
+  }, [mode]);
+
+  const compareStrings = (userInput: string, correct: string) => {
+    const comparison: Array<{ char: string; isCorrect: boolean }> = [];
+    const maxLength = Math.max(userInput.length, correct.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      const userChar = userInput[i] || '';
+      const correctChar = correct[i] || '';
+      
+      if (userChar && correctChar) {
+        comparison.push({
+          char: userChar,
+          isCorrect: userChar === correctChar
+        });
+      } else if (userChar && !correctChar) {
+        comparison.push({
+          char: userChar,
+          isCorrect: false
+        });
+      } else if (!userChar && correctChar) {
+        comparison.push({
+          char: `_${correctChar}_`,
+          isCorrect: false
+        });
+      }
+    }
+    
+    return comparison;
+  };
+
+  const checkAnswer = () => {
+    const userInput = userAnswer.trim();
+    let correctAnswer: string;
+    let isCorrect: boolean;
+
+    if (mode === 'toJapanese') {
+      correctAnswer = numberToJapanese(currentNumber);
+      isCorrect = userInput === correctAnswer;
+    } else {
+      correctAnswer = currentNumber.toString();
+      const parsedAnswer = japaneseToNumber(userInput);
+      isCorrect = parsedAnswer === currentNumber;
+    }
+
+    const comparison = isCorrect ? undefined : compareStrings(userInput, correctAnswer);
+
+    setFeedback({
+      show: true,
+      isCorrect,
+      correctAnswer,
+      userAnswer: userInput,
+      comparison
+    });
+
+    setScore(prev => ({
+      correct: prev.correct + (isCorrect ? 1 : 0),
+      total: prev.total + 1
+    }));
+
+    if (isCorrect) {
+      setTimeout(() => {
+        generateNewQuestion();
+      }, 1500);
+    }
   };
 
   const resetScore = () => {
     setScore({ correct: 0, total: 0 });
+    generateNewQuestion();
+  };
+
+  const getQuestion = () => {
+    if (mode === 'toJapanese') {
+      return `¿Cómo se escribe ${currentNumber} en japonés?`;
+    } else {
+      return `¿Qué número representa ${numberToJapanese(currentNumber)}?`;
+    }
   };
 
   const getScorePercentage = () => {
@@ -55,154 +119,120 @@ const NumberExercise = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2">Ejercicio de Números</h2>
-        <div className="flex justify-center gap-2 mb-4">
-          <Button
-            variant={mode === 'number-to-hiragana' ? 'default' : 'outline'}
-            onClick={() => setMode('number-to-hiragana')}
-            size="sm"
-          >
-            Número → Hiragana
-          </Button>
-          <Button
-            variant={mode === 'hiragana-to-number' ? 'default' : 'outline'}
-            onClick={() => setMode('hiragana-to-number')}
-            size="sm"
-          >
-            Hiragana → Número
-          </Button>
-        </div>
-      </div>
-
-      {/* Score */}
-      <div className="text-center">
-        <div className="text-sm text-muted-foreground mb-2">
-          Puntuación: {score.correct}/{score.total} ({getScorePercentage()}%)
-        </div>
-        <div className="w-full bg-muted rounded-full h-2">
-          <div 
-            className="bg-primary h-2 rounded-full transition-all duration-300"
-            style={{ width: `${getScorePercentage()}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Settings */}
-      <div className="flex items-center justify-center gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <Settings className="h-4 w-4" />
-          <label htmlFor="maxNumber">Máximo:</label>
-          <Input
-            id="maxNumber"
-            type="number"
-            value={maxNumber}
-            onChange={(e) => setMaxNumber(parseInt(e.target.value) || 9999999)}
-            className="w-24 h-8"
-            min="1"
-            max="9999999"
-          />
-        </div>
-      </div>
-
-      {/* Exercise Card */}
-      <Card className="min-h-[300px] shadow-lg">
-        <CardContent className="p-8 flex flex-col items-center justify-center min-h-[300px] text-center">
-          <div className="space-y-6 w-full max-w-md">
-            {mode === 'number-to-hiragana' ? (
-              <>
-                <div className="text-4xl font-bold text-primary mb-4">
-                  {currentNumber.toLocaleString()}
-                </div>
-                <div className="text-lg text-muted-foreground mb-6">
-                  Escribe este número en hiragana:
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="text-4xl font-bold text-primary mb-4">
-                  {currentHiragana}
-                </div>
-                <div className="text-lg text-muted-foreground mb-6">
-                  ¿Qué número es este?
-                </div>
-              </>
-            )}
-
+      <Card className="animate-fade-in">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calculator className="h-5 w-5" />
+            Ejercicio de Números
+          </CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex gap-2">
+              <Button
+                variant={mode === 'toJapanese' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMode('toJapanese')}
+              >
+                Número → Japonés
+              </Button>
+              <Button
+                variant={mode === 'toNumber' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMode('toNumber')}
+              >
+                Japonés → Número
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">
+                {score.correct}/{score.total} ({getScorePercentage()}%)
+              </Badge>
+              <Button variant="outline" size="sm" onClick={resetScore}>
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold mb-4">{getQuestion()}</h3>
             <div className="space-y-4">
               <Input
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
-                placeholder={mode === 'number-to-hiragana' ? "ej: きゅうじゅうご" : "ej: 95"}
+                onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
+                placeholder={mode === 'toJapanese' ? 'Escribe en japonés...' : 'Escribe el número...'}
                 className="text-lg text-center"
-                disabled={showResult}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !showResult && userAnswer.trim()) {
-                    handleSubmit();
-                  }
-                }}
+                disabled={feedback.show && feedback.isCorrect}
               />
-
-              {!showResult ? (
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={!userAnswer.trim()}
-                  className="w-full"
-                >
-                  <Check className="h-4 w-4 mr-2" />
-                  Comprobar
-                </Button>
-              ) : (
-                <div className="space-y-4">
-                  <div className={`p-4 rounded-lg ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                    <div className={`text-lg font-semibold mb-2 ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                      {isCorrect ? '¡Correcto!' : 'Incorrecto'}
-                    </div>
-                    {!isCorrect && (
-                      <div className="text-sm mb-2 text-red-600">
-                        <span className="font-medium">Tu respuesta:</span> {userAnswer || "(vacío)"}
-                      </div>
+              
+              {feedback.show && (
+                <div className={`p-4 rounded-lg border ${
+                  feedback.isCorrect 
+                    ? 'bg-green-50 border-green-200' 
+                    : 'bg-red-50 border-red-200'
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    {feedback.isCorrect ? (
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-600" />
                     )}
-                    <div className="text-sm">
-                      <span className="font-medium">Respuesta correcta:</span>{' '}
-                      {mode === 'number-to-hiragana' ? currentHiragana : currentNumber.toLocaleString()}
-                    </div>
+                    <span className={`font-semibold ${
+                      feedback.isCorrect ? 'text-green-800' : 'text-red-800'
+                    }`}>
+                      {feedback.isCorrect ? '¡Correcto!' : 'Incorrecto'}
+                    </span>
                   </div>
-
-                  <Button 
-                    onClick={handleNext}
-                    className="w-full"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Siguiente Número
-                  </Button>
+                  
+                  {!feedback.isCorrect && (
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Tu respuesta: </span>
+                        <div className="inline-flex">
+                          {feedback.comparison?.map((item, index) => (
+                            <span
+                              key={index}
+                              className={`px-1 ${
+                                item.isCorrect 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : item.char.startsWith('_') 
+                                    ? 'bg-yellow-100 text-yellow-800' 
+                                    : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {item.char.startsWith('_') ? item.char.slice(1, -1) : item.char}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Respuesta correcta: </span>
+                        <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+                          {feedback.correctAnswer}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
+              
+              <div className="flex gap-2 justify-center">
+                <Button 
+                  onClick={checkAnswer} 
+                  disabled={!userAnswer.trim() || (feedback.show && feedback.isCorrect)}
+                >
+                  Comprobar
+                </Button>
+                {feedback.show && !feedback.isCorrect && (
+                  <Button variant="outline" onClick={generateNewQuestion}>
+                    Siguiente
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Actions */}
-      <div className="flex justify-center gap-2">
-        <Button 
-          variant="outline" 
-          onClick={handleNext}
-          disabled={showResult}
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Nuevo Número
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={resetScore}
-          className="text-orange-600 border-orange-200 hover:bg-orange-50"
-        >
-          <X className="h-4 w-4 mr-2" />
-          Resetear Puntuación
-        </Button>
-      </div>
     </div>
   );
 };
