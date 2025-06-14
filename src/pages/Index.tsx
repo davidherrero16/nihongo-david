@@ -11,9 +11,7 @@ import CardListView from "@/components/CardListView";
 import StudySession from "@/components/StudySession";
 import NumberExercise from "@/components/NumberExercise";
 import KanaExercise from "@/components/KanaExercise";
-import InactivityWarning from "@/components/InactivityWarning";
 import WelcomeMessage from "@/components/WelcomeMessage";
-import { useInactivityManager } from "@/hooks/useInactivityManager";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -38,8 +36,6 @@ const Index = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [currentDeckId, setCurrentDeckId] = useState<string>('');
 
-  const { showWarning, warningTimeLeft, handleExtendSession, handleLogout } = useInactivityManager();
-
   // Establecer el primer deck como actual cuando se carguen
   useEffect(() => {
     if (decks.length > 0 && !currentDeckId) {
@@ -56,13 +52,14 @@ const Index = () => {
   }, [user, authLoading, navigate]);
 
   const handleSignOut = async () => {
-    console.log('Index: Iniciando proceso de cierre de sesión');
+    console.log('Iniciando cierre de sesión...');
     try {
       await signOut();
-      console.log('Index: Sesión cerrada, redirigiendo a /auth');
       navigate('/auth');
     } catch (error) {
-      console.error('Index: Error al cerrar sesión:', error);
+      console.error('Error al cerrar sesión:', error);
+      // Forzar redirección incluso si hay error
+      navigate('/auth');
     }
   };
 
@@ -202,14 +199,6 @@ const Index = () => {
           />
         )}
       </main>
-
-      {showWarning && (
-        <InactivityWarning
-          onExtendSession={handleExtendSession}
-          onLogout={handleLogout}
-          remainingTime={warningTimeLeft}
-        />
-      )}
     </div>
   );
 };

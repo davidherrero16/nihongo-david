@@ -9,11 +9,6 @@ interface HeaderProps {
 }
 
 const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
-  const handleSignOut = async () => {
-    console.log('Header: Iniciando cierre de sesión');
-    await onSignOut();
-  };
-
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
@@ -28,7 +23,7 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleSignOut}
+              onClick={onSignOut}
               className="flex items-center gap-1 text-xs sm:text-sm hover:bg-red-50 hover:text-red-600"
             >
               <LogOut className="h-4 w-4" />
