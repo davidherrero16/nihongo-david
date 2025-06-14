@@ -59,6 +59,14 @@ const Index = () => {
     navigate('/auth');
   };
 
+  const handleCreateDeck = async (name: string) => {
+    const newDeckId = await createDeck(name);
+    if (newDeckId) {
+      setCurrentDeckId(newDeckId);
+      setCurrentCardIndex(0);
+    }
+  };
+
   if (authLoading || decksLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
@@ -212,13 +220,7 @@ const Index = () => {
                   setCurrentDeckId(deckId);
                   setCurrentCardIndex(0);
                 }}
-                onCreateDeck={(name) => {
-                  const newDeckId = createDeck(name);
-                  if (newDeckId) {
-                    setCurrentDeckId(newDeckId);
-                    setCurrentCardIndex(0);
-                  }
-                }}
+                onCreateDeck={handleCreateDeck}
               />
             </div>
 
@@ -372,12 +374,7 @@ const Index = () => {
                 decks={decks}
                 currentDeckId={currentDeckId}
                 onSelectDeck={setCurrentDeckId}
-                onCreateDeck={(name) => {
-                  const newDeckId = createDeck(name);
-                  if (newDeckId) {
-                    setCurrentDeckId(newDeckId);
-                  }
-                }}
+                onCreateDeck={handleCreateDeck}
               />
             </div>
             
@@ -402,12 +399,7 @@ const Index = () => {
                 decks={decks}
                 currentDeckId={currentDeckId}
                 onSelectDeck={setCurrentDeckId}
-                onCreateDeck={(name) => {
-                  const newDeckId = createDeck(name);
-                  if (newDeckId) {
-                    setCurrentDeckId(newDeckId);
-                  }
-                }}
+                onCreateDeck={handleCreateDeck}
               />
             </div>
             
