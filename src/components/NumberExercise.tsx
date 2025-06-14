@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Calculator, RotateCcw, CheckCircle, XCircle } from "lucide-react";
-import { numberToJapanese, japaneseToNumber } from "@/utils/numberConverter";
+import { convertNumberToHiragana, generateRandomNumber } from "@/utils/numberConverter";
 
 const NumberExercise = () => {
   const [currentNumber, setCurrentNumber] = useState<number>(0);
@@ -19,10 +19,6 @@ const NumberExercise = () => {
     userAnswer: string;
     comparison?: Array<{ char: string; isCorrect: boolean }>;
   }>({ show: false, isCorrect: false, correctAnswer: "", userAnswer: "" });
-
-  const generateRandomNumber = () => {
-    return Math.floor(Math.random() * 9999) + 1;
-  };
 
   const generateNewQuestion = () => {
     setCurrentNumber(generateRandomNumber());
@@ -63,17 +59,37 @@ const NumberExercise = () => {
     return comparison;
   };
 
+  // Función simple para convertir hiragana de vuelta a número (para el modo japonés → número)
+  const hiraganaToNumber = (hiragana: string): number => {
+    // Esta es una implementación básica - en una app real necesitarías una implementación más completa
+    const numberMap: { [key: string]: number } = {
+      'ぜろ': 0,
+      'いち': 1,
+      'に': 2,
+      'さん': 3,
+      'よん': 4,
+      'ご': 5,
+      'ろく': 6,
+      'なな': 7,
+      'はち': 8,
+      'きゅう': 9,
+      'じゅう': 10
+    };
+    
+    return numberMap[hiragana] || -1;
+  };
+
   const checkAnswer = () => {
     const userInput = userAnswer.trim();
     let correctAnswer: string;
     let isCorrect: boolean;
 
     if (mode === 'toJapanese') {
-      correctAnswer = numberToJapanese(currentNumber);
+      correctAnswer = convertNumberToHiragana(currentNumber);
       isCorrect = userInput === correctAnswer;
     } else {
       correctAnswer = currentNumber.toString();
-      const parsedAnswer = japaneseToNumber(userInput);
+      const parsedAnswer = parseInt(userInput);
       isCorrect = parsedAnswer === currentNumber;
     }
 
@@ -108,7 +124,7 @@ const NumberExercise = () => {
     if (mode === 'toJapanese') {
       return `¿Cómo se escribe ${currentNumber} en japonés?`;
     } else {
-      return `¿Qué número representa ${numberToJapanese(currentNumber)}?`;
+      return `¿Qué número representa ${convertNumberToHiragana(currentNumber)}?`;
     }
   };
 
