@@ -47,8 +47,8 @@ const StudyView = ({
 
   if (!currentDeck || currentDeck.cards.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
+      <div className="max-w-2xl mx-auto px-2">
+        <div className="mb-4 sm:mb-6">
           <DeckSelector
             decks={decks}
             currentDeckId={currentDeckId}
@@ -64,9 +64,9 @@ const StudyView = ({
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto px-2">
       {/* Selector de deck */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <DeckSelector
           decks={decks}
           currentDeckId={currentDeckId}
@@ -80,61 +80,65 @@ const StudyView = ({
       {/* Estadísticas del deck */}
       <DeckStats stats={deckStats} />
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Configuración de sesión */}
-        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
-          <div className="flex justify-center gap-2">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex flex-wrap justify-center gap-2">
             <Button
               variant={studyMode === 'easy' ? 'default' : 'outline'}
               onClick={() => setStudyMode('easy')}
               size="sm"
+              className="text-xs sm:text-sm"
             >
-              <Brain className="h-4 w-4 mr-2" />
+              <Brain className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Modo Fácil
             </Button>
             <Button
               variant={studyMode === 'hard' ? 'default' : 'outline'}
               onClick={() => setStudyMode('hard')}
               size="sm"
+              className="text-xs sm:text-sm"
             >
-              <PenTool className="h-4 w-4 mr-2" />
+              <PenTool className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Modo Difícil
             </Button>
           </div>
           
-          <div className="flex justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             <Button
               variant={packSize === 10 ? 'default' : 'outline'}
               onClick={() => setPackSize(10)}
               size="sm"
+              className="text-xs sm:text-sm"
             >
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Pack 10
             </Button>
             <Button
               variant={packSize === 15 ? 'default' : 'outline'}
               onClick={() => setPackSize(15)}
               size="sm"
+              className="text-xs sm:text-sm"
             >
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Pack 15
             </Button>
           </div>
         </div>
 
         {/* Información de tarjetas disponibles */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-4 sm:mb-6">
           <div className="mb-4">
             {reviewCards.length > 0 ? (
-              <p className="text-lg text-blue-600 font-medium">
+              <p className="text-sm sm:text-lg text-blue-600 font-medium">
                 📚 {Math.min(reviewCards.length, packSize)} tarjetas listas para revisar
               </p>
             ) : (
-              <p className="text-lg text-green-600 font-medium">
+              <p className="text-sm sm:text-lg text-green-600 font-medium">
                 ✅ No hay tarjetas pendientes de revisión
               </p>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Total en este mazo: {currentDeck.cards.length} tarjetas
             </p>
           </div>
@@ -142,23 +146,23 @@ const StudyView = ({
           <Button 
             onClick={onStartSession}
             size="lg"
-            className="text-lg px-8 py-3"
+            className="text-sm sm:text-lg px-4 sm:px-8 py-2 sm:py-3 w-full sm:w-auto"
             disabled={currentCards.length === 0}
           >
-            <Brain className="h-5 w-5 mr-2" />
+            <Brain className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
             Comenzar Sesión ({Math.min(currentCards.length, packSize)} tarjetas)
           </Button>
         </div>
 
         {/* Modo de estudio individual (legacy) */}
-        <div className="pt-8 border-t border-muted">
-          <h3 className="text-lg font-medium text-center mb-4 text-muted-foreground">
+        <div className="pt-6 sm:pt-8 border-t border-muted">
+          <h3 className="text-base sm:text-lg font-medium text-center mb-4 text-muted-foreground">
             O estudia tarjeta por tarjeta
           </h3>
           
           {/* Información de progreso */}
           <div className="text-center mb-4">
-            <p className="text-muted-foreground mb-2">
+            <p className="text-sm text-muted-foreground mb-2">
               Tarjeta {currentCardIndex + 1} de {currentCards.length}
             </p>
             <div className="w-full bg-muted rounded-full h-2">

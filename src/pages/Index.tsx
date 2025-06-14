@@ -119,14 +119,14 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 overflow-x-hidden">
       <Header 
         currentView={currentView}
         onViewChange={setCurrentView}
         onSignOut={handleSignOut}
       />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full">
         {currentView === 'session' && (
           <StudySession
             cards={currentCards}
