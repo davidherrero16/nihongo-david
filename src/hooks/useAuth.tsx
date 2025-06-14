@@ -39,17 +39,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Función para cerrar sesión manualmente
   const signOut = async () => {
-    if (inactivityTimer.current) {
-      clearTimeout(inactivityTimer.current);
-      inactivityTimer.current = null;
+    console.log('Cerrando sesión...');
+    try {
+      // Limpiar timer de inactividad
+      if (inactivityTimer.current) {
+        clearTimeout(inactivityTimer.current);
+        inactivityTimer.current = null;
+      }
+      
+      // Cerrar sesión en Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error al cerrar sesión:', error);
+      } else {
+        console.log('Sesión cerrada exitosamente');
+        // La redirección se manejará automáticamente por el useEffect en Index.tsx
+      }
+    } catch (error) {
+      console.error('Error inesperado al cerrar sesión:', error);
     }
-    await supabase.auth.signOut();
   };
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);

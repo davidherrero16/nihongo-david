@@ -50,18 +50,15 @@ const Index = () => {
   // Redireccionar si no está autenticado
   useEffect(() => {
     if (!authLoading && !user) {
+      console.log('Usuario no autenticado, redirigiendo a /auth');
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
 
   const handleSignOut = async () => {
-    console.log('Header sign out triggered');
-    try {
-      await signOut();
-      navigate('/auth');
-    } catch (error) {
-      console.error('Error during sign out:', error);
-    }
+    console.log('Iniciando proceso de cierre de sesión desde Header');
+    await signOut();
+    navigate('/auth');
   };
 
   const handleCreateDeck = async (name: string) => {
