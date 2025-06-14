@@ -13,11 +13,12 @@ const WelcomeMessage = () => {
     return "¡Buenas noches!";
   };
 
-  const getUserName = () => {
+  const getGreetingWithName = () => {
+    const greeting = getGreeting();
     if (profile?.display_name) {
-      return profile.display_name;
+      return `${greeting.slice(0, -1)}, ${profile.display_name}!`;
     }
-    return "";
+    return greeting;
   };
 
   return (
@@ -30,11 +31,8 @@ const WelcomeMessage = () => {
           </div>
           <div>
             <h2 className="text-lg sm:text-xl font-semibold text-blue-900">
-              {getGreeting()}
+              {getGreetingWithName()}
             </h2>
-            <p className="text-sm sm:text-base text-blue-700">
-              Bienvenido{getUserName() ? ` ${getUserName()}` : ""} a tu app de estudio de japonés
-            </p>
           </div>
         </div>
         <p className="text-xs sm:text-sm text-blue-600">
