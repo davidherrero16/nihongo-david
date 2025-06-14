@@ -8,7 +8,7 @@ interface AddCardViewProps {
   currentDeckId: string;
   onSelectDeck: (deckId: string) => void;
   onCreateDeck: (name: string) => Promise<void>;
-  onAddCard: (word: string, reading: string, meaning: string) => void;
+  onAddCard: (word: string, reading: string, meaning: string) => Promise<void>;
 }
 
 const AddCardView = ({
@@ -19,7 +19,7 @@ const AddCardView = ({
   onAddCard
 }: AddCardViewProps) => {
   return (
-    <div className="max-w-lg mx-auto">
+    <div className="max-w-2xl mx-auto">
       <div className="mb-6">
         <DeckSelector
           decks={decks}
@@ -29,11 +29,7 @@ const AddCardView = ({
         />
       </div>
       
-      <AddCardForm 
-        onAddCard={(word, reading, meaning) => 
-          onAddCard(word, reading, meaning)
-        } 
-      />
+      <AddCardForm onAddCard={onAddCard} />
     </div>
   );
 };

@@ -1,87 +1,102 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Plus, BookOpen } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddCardFormProps {
-  onAddCard: (word: string, reading: string, meaning: string) => void;
+  onAddCard: (word: string, reading: string, meaning: string) => Promise<void>;
 }
 
 const AddCardForm = ({ onAddCard }: AddCardFormProps) => {
   const [word, setWord] = useState("");
   const [reading, setReading] = useState("");
   const [meaning, setMeaning] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (word.trim() && reading.trim() && meaning.trim()) {
-      onAddCard(word.trim(), reading.trim(), meaning.trim());
+    
+    if (!word || !reading || !meaning) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onAddCard(word.trim(), reading.trim(), meaning.trim());
       setWord("");
       setReading("");
       setMeaning("");
+      toast({
+        title: "Éxito",
+        description: "Tarjeta añadida correctamente",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo añadir la tarjeta",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="shadow-lg">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Plus className="h-5 w-5" />
-          Añadir Nueva Tarjeta
+          <BookOpen className="h-5 w-5" />
+          Añadir nueva tarjeta
         </CardTitle>
-        <CardDescription>
-          Crea una nueva tarjeta de estudio con la palabra japonesa, su lectura y significado
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="word">Palabra Japonesa</Label>
+            <Label htmlFor="word">Palabra japonesa</Label>
             <Input
               id="word"
               value={word}
               onChange={(e) => setWord(e.target.value)}
-              placeholder="例: 本"
-              className="text-lg"
-              required
+              placeholder="ej: こんにちは"
+              disabled={isSubmitting}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="reading">Lectura (Hiragana/Katakana)</Label>
+            <Label htmlFor="reading">Lectura (hiragana/katakana)</Label>
             <Input
               id="reading"
               value={reading}
               onChange={(e) => setReading(e.target.value)}
-              placeholder="例: ほん"
-              className="text-lg"
-              required
+              placeholder="ej: こんにちは"
+              disabled={isSubmitting}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="meaning">Significado en Español</Label>
-            <Textarea
+            <Label htmlFor="meaning">Significado en español</Label>
+            <Input
               id="meaning"
               value={meaning}
               onChange={(e) => setMeaning(e.target.value)}
-              placeholder="例: libro"
-              className="min-h-[80px]"
-              required
+              placeholder="ej: hola"
+              disabled={isSubmitting}
             />
           </div>
           
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={!word.trim() || !reading.trim() || !meaning.trim()}
-          >
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
             <Plus className="h-4 w-4 mr-2" />
-            Añadir Tarjeta
+            {isSubmitting ? "Añadiendo..." : "Añadir tarjeta"}
           </Button>
         </form>
       </CardContent>

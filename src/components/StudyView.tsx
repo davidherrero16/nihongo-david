@@ -54,18 +54,18 @@ const StudyView = ({
   if (!currentDeck || currentDeck.cards.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-2">
-        <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
-          <div className="flex-1 w-full">
-            <DeckSelector
-              decks={decksWithCards}
-              currentDeckId={currentDeckId}
-              onSelectDeck={(deckId) => {
-                onSelectDeck(deckId);
-              }}
-              onCreateDeck={onCreateDeck}
-            />
+        <div className="mb-4 sm:mb-6">
+          <DeckSelector
+            decks={decksWithCards}
+            currentDeckId={currentDeckId}
+            onSelectDeck={(deckId) => {
+              onSelectDeck(deckId);
+            }}
+            onCreateDeck={onCreateDeck}
+          />
+          <div className="mt-4 flex justify-end">
+            <ImportPopup onImport={onImport} />
           </div>
-          <ImportPopup onImport={onImport} />
         </div>
         <EmptyState onAddCard={onAddCard} />
       </div>
@@ -74,22 +74,18 @@ const StudyView = ({
 
   return (
     <div className="max-w-2xl mx-auto px-2">
-      {/* Selector de deck con botón de importar - mejorada alineación */}
+      {/* Selector de deck con botón de importar - alineación mejorada */}
       <div className="mb-4 sm:mb-6">
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center">
-          <div className="flex-1">
-            <DeckSelector
-              decks={decksWithCards}
-              currentDeckId={currentDeckId}
-              onSelectDeck={(deckId) => {
-                onSelectDeck(deckId);
-              }}
-              onCreateDeck={onCreateDeck}
-            />
-          </div>
-          <div className="flex justify-center sm:justify-end">
-            <ImportPopup onImport={onImport} />
-          </div>
+        <DeckSelector
+          decks={decksWithCards}
+          currentDeckId={currentDeckId}
+          onSelectDeck={(deckId) => {
+            onSelectDeck(deckId);
+          }}
+          onCreateDeck={onCreateDeck}
+        />
+        <div className="mt-4 flex justify-end">
+          <ImportPopup onImport={onImport} />
         </div>
       </div>
 

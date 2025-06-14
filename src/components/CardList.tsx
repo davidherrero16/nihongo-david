@@ -1,176 +1,108 @@
+
 import { useState } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Card } from "@/hooks/useSupabaseDecks";
-import { Trash2, RefreshCw, Search, ArrowUpDown, FileX } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Trash2, RotateCcw, Archive, Search, X, FolderMinus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import type { Card as CardType } from "@/hooks/useSupabaseDecks";
 
 interface CardListProps {
-  cards: Card[];
+  cards: CardType[];
   onDeleteCard: (id: string) => void;
   onResetProgress: () => void;
-  onDeleteDeck?: () => void;
-  isDeletable?: boolean;
+  onDeleteDeck: () => void;
+  isDeletable: boolean;
 }
 
-const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeletable = false }: CardListProps) => {
+const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeletable }: CardListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortKey, setSortKey] = useState<keyof Card>("word");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
-  const handleSort = (key: keyof Card) => {
-    if (sortKey === key) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(key);
-      setSortDirection("asc");
-    }
-  };
-
-  const handleDeleteCard = async (cardId: string) => {
-    if (deletingCardId) return; // Prevent multiple concurrent deletions
-    
-    console.log(`Attempting to delete card: ${cardId}`);
-    setDeletingCardId(cardId);
-    
-    try {
-      await onDeleteCard(cardId);
-      console.log(`Card ${cardId} deleted successfully`);
-    } catch (error) {
-      console.error('Error during card deletion:', error);
-    } finally {
-      // Reset the deleting state after a short delay to prevent UI flicker
-      setTimeout(() => {
-        setDeletingCardId(null);
-      }, 500);
-    }
-  };
-
-  const filteredCards = cards.filter(
-    (card) =>
-      card.word.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      card.reading.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      card.meaning.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCards = cards.filter(card =>
+    card.word.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    card.reading.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    card.meaning.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const sortedCards = [...filteredCards].sort((a, b) => {
-    let valueA: any = a[sortKey];
-    let valueB: any = b[sortKey];
-
-    // Handle dates
-    if (valueA instanceof Date && valueB instanceof Date) {
-      valueA = valueA.getTime();
-      valueB = valueB.getTime();
-    }
-
-    // Handle strings
-    if (typeof valueA === 'string' && typeof valueB === 'string') {
-      valueA = valueA.toLowerCase();
-      valueB = valueB.toLowerCase();
-    }
-
-    if (valueA < valueB) return sortDirection === "asc" ? -1 : 1;
-    if (valueA > valueB) return sortDirection === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString();
+  const getDifficultyColor = (difficulty: number) => {
+    if (difficulty <= 1) return "bg-red-100 text-red-800";
+    if (difficulty <= 3) return "bg-yellow-100 text-yellow-800";
+    return "bg-green-100 text-green-800";
   };
 
-  const getDifficultyColor = (difficulty: number) => {
-    const colors = [
-      "bg-red-100 text-red-800",       // 0
-      "bg-red-100 text-red-800",       // 1
-      "bg-orange-100 text-orange-800", // 2
-      "bg-orange-100 text-orange-800", // 3
-      "bg-yellow-100 text-yellow-800", // 4
-      "bg-yellow-100 text-yellow-800", // 5
-      "bg-lime-100 text-lime-800",     // 6
-      "bg-green-100 text-green-800",   // 7
-      "bg-green-100 text-green-800",   // 8
-      "bg-emerald-100 text-emerald-800", // 9
-      "bg-emerald-100 text-emerald-800", // 10
-    ];
-    return colors[difficulty] || colors[0];
+  const getDifficultyText = (difficulty: number) => {
+    if (difficulty <= 1) return "Difícil";
+    if (difficulty <= 3) return "Medio";
+    return "Fácil";
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar tarjetas..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full sm:w-64"
+            className="pl-10 pr-10"
           />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1 h-8 w-8 p-0"
+              onClick={() => setSearchTerm("")}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
+        
+        <div className="flex gap-2 flex-wrap">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-orange-600 border-orange-200 hover:bg-orange-50">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Resetear Progreso
+              <Button variant="outline" size="sm">
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Resetear progreso
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Resetear progreso de estudio</AlertDialogTitle>
+                <AlertDialogTitle>¿Resetear progreso?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Esta acción reseteará todo el progreso de estudio para todas las tarjetas. 
-                  El nivel de dificultad volverá a 0 y se reiniciarán las fechas de revisión.
-                  ¿Estás seguro de que quieres continuar?
+                  Esto reiniciará el progreso de aprendizaje de todas las tarjetas en este grupo. Esta acción no se puede deshacer.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={onResetProgress}>Resetear</AlertDialogAction>
+                <AlertDialogAction onClick={onResetProgress}>
+                  Resetear progreso
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
 
-          {isDeletable && onDeleteDeck && (
+          {isDeletable && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
-                  <FileX className="h-4 w-4 mr-2" />
-                  Eliminar Deck
+                <Button variant="destructive" size="sm">
+                  <FolderMinus className="h-4 w-4 mr-2" />
+                  Eliminar grupo
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Eliminar deck</AlertDialogTitle>
+                  <AlertDialogTitle>¿Eliminar grupo completo?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Esta acción eliminará todo el deck y todas sus tarjetas.
-                    Esta acción no se puede deshacer. ¿Estás seguro?
+                    Esto eliminará el grupo y todas sus tarjetas permanentemente. Esta acción no se puede deshacer.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={onDeleteDeck} className="bg-red-600">
-                    Eliminar
+                  <AlertDialogAction onClick={onDeleteDeck} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Eliminar grupo
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -179,75 +111,32 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
         </div>
       </div>
 
-      <div className="rounded-md border overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[180px] cursor-pointer" onClick={() => handleSort("word")}>
-                <div className="flex items-center">
-                  Palabra
-                  {sortKey === "word" && (
-                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("reading")}>
-                <div className="flex items-center">
-                  Lectura
-                  {sortKey === "reading" && (
-                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("meaning")}>
-                <div className="flex items-center">
-                  Significado
-                  {sortKey === "meaning" && (
-                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead className="hidden md:table-cell cursor-pointer" onClick={() => handleSort("difficulty")}>
-                <div className="flex items-center">
-                  Nivel
-                  {sortKey === "difficulty" && (
-                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead className="hidden lg:table-cell cursor-pointer" onClick={() => handleSort("nextReview")}>
-                <div className="flex items-center">
-                  Próxima revisión
-                  {sortKey === "nextReview" && (
-                    <ArrowUpDown className={`ml-1 h-3 w-3 ${sortDirection === "desc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedCards.length > 0 ? (
-              sortedCards.map((card) => (
-                <TableRow key={card.id}>
-                  <TableCell className="font-medium">{card.word}</TableCell>
-                  <TableCell>{card.reading}</TableCell>
-                  <TableCell>{card.meaning}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(card.difficulty)}`}>
-                      {card.difficulty}/10
-                    </span>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">{formatDate(card.nextReview)}</TableCell>
-                  <TableCell className="text-right">
+      {filteredCards.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Archive className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">
+              {searchTerm ? "No se encontraron tarjetas que coincidan con tu búsqueda." : "No hay tarjetas en este grupo."}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {filteredCards.map((card) => (
+            <Card key={card.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg">{card.word}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{card.reading}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className={getDifficultyColor(card.difficulty)}>
+                      {getDifficultyText(card.difficulty)}
+                    </Badge>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-red-500 hover:bg-red-50"
-                          disabled={deletingCardId === card.id}
-                        >
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
@@ -260,32 +149,22 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteCard(card.id)}
-                            className="bg-red-600 hover:bg-red-700"
-                            disabled={deletingCardId === card.id}
-                          >
-                            {deletingCardId === card.id ? "Eliminando..." : "Eliminar"}
+                          <AlertDialogAction onClick={() => onDeleteCard(card.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Eliminar
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
-                  No se encontraron tarjetas que coincidan con la búsqueda
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="text-sm text-muted-foreground text-center">
-        {filteredCards.length} {filteredCards.length === 1 ? "tarjeta" : "tarjetas"} en total
-      </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-base">{card.meaning}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

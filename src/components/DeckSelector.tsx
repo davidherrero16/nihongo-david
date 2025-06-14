@@ -46,17 +46,17 @@ const DeckSelector = ({ decks, currentDeckId, onSelectDeck, onCreateDeck }: Deck
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Seleccionar Grupo de Tarjetas</h3>
+        <h3 className="text-lg font-medium">Seleccionar grupo de tarjetas</h3>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="flex items-center gap-2">
               <FolderPlus className="h-4 w-4" />
-              Nuevo Grupo
+              Nuevo grupo
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Crear Nuevo Grupo</DialogTitle>
+              <DialogTitle>Crear nuevo grupo</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
@@ -75,7 +75,7 @@ const DeckSelector = ({ decks, currentDeckId, onSelectDeck, onCreateDeck }: Deck
                 </Button>
                 <Button onClick={handleCreateDeck} disabled={!newDeckName.trim()}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Crear Grupo
+                  Crear grupo
                 </Button>
               </div>
             </div>
