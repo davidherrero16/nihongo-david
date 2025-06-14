@@ -53,104 +53,145 @@ const StudyView = ({
 
   if (!currentDeck || currentDeck.cards.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-2">
-        <div className="mb-4 sm:mb-6">
-          <DeckSelector
-            decks={decksWithCards}
-            currentDeckId={currentDeckId}
-            onSelectDeck={(deckId) => {
-              onSelectDeck(deckId);
-            }}
-            onCreateDeck={onCreateDeck}
-          />
-          <div className="mt-4 flex justify-end">
-            <ImportPopup onImport={onImport} />
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="space-y-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="p-3 bg-blue-100 rounded-full">
+                <Brain className="h-8 w-8 text-blue-600" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900">Estudiar</h1>
+            </div>
           </div>
+          
+          <div className="bg-white rounded-2xl shadow-lg border-0 p-8">
+            <DeckSelector
+              decks={decksWithCards}
+              currentDeckId={currentDeckId}
+              onSelectDeck={onSelectDeck}
+              onCreateDeck={onCreateDeck}
+            />
+            <div className="mt-6 flex justify-end">
+              <ImportPopup onImport={onImport} />
+            </div>
+          </div>
+          
+          <EmptyState onAddCard={onAddCard} />
         </div>
-        <EmptyState onAddCard={onAddCard} />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-2">
-      {/* Selector de deck con botón de importar - alineación mejorada */}
-      <div className="mb-4 sm:mb-6">
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      {/* Header */}
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="p-3 bg-blue-100 rounded-full">
+            <Brain className="h-8 w-8 text-blue-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Estudiar</h1>
+        </div>
+      </div>
+
+      {/* Deck selector card */}
+      <div className="bg-white rounded-2xl shadow-lg border-0 p-6">
         <DeckSelector
           decks={decksWithCards}
           currentDeckId={currentDeckId}
-          onSelectDeck={(deckId) => {
-            onSelectDeck(deckId);
-          }}
+          onSelectDeck={onSelectDeck}
           onCreateDeck={onCreateDeck}
         />
-        <div className="mt-4 flex justify-end">
+        <div className="mt-6 flex justify-end">
           <ImportPopup onImport={onImport} />
         </div>
       </div>
 
-      {/* Estadísticas del deck */}
-      <DeckStats stats={deckStats} />
+      {/* Stats card */}
+      <div className="bg-white rounded-2xl shadow-lg border-0 p-6">
+        <DeckStats stats={deckStats} />
+      </div>
 
-      <div className="space-y-4 sm:space-y-6">
-        {/* Configuración de sesión */}
-        <div className="flex flex-col gap-3 sm:gap-4">
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button
-              variant={studyMode === 'easy' ? 'default' : 'outline'}
-              onClick={() => setStudyMode('easy')}
-              size="sm"
-              className="text-xs sm:text-sm"
-            >
-              <Brain className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Modo fácil
-            </Button>
-            <Button
-              variant={studyMode === 'hard' ? 'default' : 'outline'}
-              onClick={() => setStudyMode('hard')}
-              size="sm"
-              className="text-xs sm:text-sm"
-            >
-              <PenTool className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Modo difícil
-            </Button>
+      {/* Main study card */}
+      <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border-0 p-8 space-y-8">
+        {/* Configuration section */}
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-gray-800 mb-6">Configuración de estudio</h3>
           </div>
           
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button
-              variant={packSize === 10 ? 'default' : 'outline'}
-              onClick={() => setPackSize(10)}
-              size="sm"
-              className="text-xs sm:text-sm"
-            >
-              <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Pack 10
-            </Button>
-            <Button
-              variant={packSize === 15 ? 'default' : 'outline'}
-              onClick={() => setPackSize(15)}
-              size="sm"
-              className="text-xs sm:text-sm"
-            >
-              <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Pack 15
-            </Button>
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Modo:</span>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant={studyMode === 'easy' ? 'default' : 'outline'}
+                  onClick={() => setStudyMode('easy')}
+                  size="sm"
+                  className="min-w-[120px] rounded-xl"
+                >
+                  <Brain className="h-4 w-4 mr-2" />
+                  Modo fácil
+                </Button>
+                <Button
+                  variant={studyMode === 'hard' ? 'default' : 'outline'}
+                  onClick={() => setStudyMode('hard')}
+                  size="sm"
+                  className="min-w-[120px] rounded-xl"
+                >
+                  <PenTool className="h-4 w-4 mr-2" />
+                  Modo difícil
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Tamaño del pack:</span>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant={packSize === 10 ? 'default' : 'outline'}
+                  onClick={() => setPackSize(10)}
+                  size="sm"
+                  className="min-w-[100px] rounded-xl"
+                >
+                  Pack 10
+                </Button>
+                <Button
+                  variant={packSize === 15 ? 'default' : 'outline'}
+                  onClick={() => setPackSize(15)}
+                  size="sm"
+                  className="min-w-[100px] rounded-xl"
+                >
+                  Pack 15
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Información de tarjetas disponibles */}
-        <div className="text-center mb-4 sm:mb-6">
-          <div className="mb-4">
+        {/* Session info and start button */}
+        <div className="text-center space-y-6 py-6 border-t border-gray-100">
+          <div className="space-y-4">
             {reviewCards.length > 0 ? (
-              <p className="text-sm sm:text-lg text-blue-600 font-medium">
-                📚 {Math.min(reviewCards.length, packSize)} tarjetas listas para revisar
-              </p>
+              <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
+                <p className="text-lg text-blue-600 font-medium">
+                  📚 {Math.min(reviewCards.length, packSize)} tarjetas listas para revisar
+                </p>
+              </div>
             ) : (
-              <p className="text-sm sm:text-lg text-green-600 font-medium">
-                ✅ No hay tarjetas pendientes de revisión
-              </p>
+              <div className="inline-block px-6 py-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200">
+                <p className="text-lg text-green-600 font-medium">
+                  ✅ No hay tarjetas pendientes de revisión
+                </p>
+              </div>
             )}
-            <p className="text-xs sm:text-sm text-muted-foreground">
+            <p className="text-sm text-gray-600">
               Total en este mazo: {currentDeck.cards.length} tarjetas
             </p>
           </div>
@@ -158,52 +199,56 @@ const StudyView = ({
           <Button 
             onClick={onStartSession}
             size="lg"
-            className="text-sm sm:text-lg px-4 sm:px-8 py-2 sm:py-3 w-full sm:w-auto"
+            className="text-lg px-8 py-4 rounded-xl min-w-[250px]"
             disabled={currentCards.length === 0}
           >
-            <Brain className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+            <Brain className="h-5 w-5 mr-2" />
             Comenzar sesión ({Math.min(currentCards.length, packSize)} tarjetas)
           </Button>
         </div>
 
-        {/* Modo de estudio individual (legacy) */}
-        <div className="pt-6 sm:pt-8 border-t border-muted">
-          <h3 className="text-base sm:text-lg font-medium text-center mb-4 text-muted-foreground">
-            O estudia tarjeta por tarjeta
-          </h3>
+        {/* Individual study mode */}
+        <div className="pt-8 border-t border-gray-100 space-y-6">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-600 mb-4">
+              O estudia tarjeta por tarjeta
+            </h3>
+          </div>
           
-          {/* Información de progreso */}
-          <div className="text-center mb-4">
-            <p className="text-sm text-muted-foreground mb-2">
+          {/* Progress info */}
+          <div className="text-center space-y-3">
+            <p className="text-sm text-gray-600">
               Tarjeta {currentCardIndex + 1} de {currentCards.length}
             </p>
-            <div className="w-full bg-muted rounded-full h-2">
+            <div className="max-w-md mx-auto bg-gray-200 rounded-full h-3">
               <div 
-                className="bg-primary h-2 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300"
                 style={{ width: `${((currentCardIndex + 1) / currentCards.length) * 100}%` }}
               />
             </div>
           </div>
 
-          {/* Tarjeta de estudio */}
+          {/* Study card */}
           {currentCards.length > 0 && (
-            studyMode === 'easy' ? (
-              <FlashCard 
-                card={currentCards[currentCardIndex]} 
-                onAnswer={onAnswer}
-                onNext={onNext}
-                onPrevious={onPrevious}
-                showNavigation={currentCards.length > 1}
-              />
-            ) : (
-              <WritingMode 
-                card={currentCards[currentCardIndex]} 
-                onAnswer={onAnswer}
-                onNext={onNext}
-                onPrevious={onPrevious}
-                showNavigation={currentCards.length > 1}
-              />
-            )
+            <div className="max-w-2xl mx-auto">
+              {studyMode === 'easy' ? (
+                <FlashCard 
+                  card={currentCards[currentCardIndex]} 
+                  onAnswer={onAnswer}
+                  onNext={onNext}
+                  onPrevious={onPrevious}
+                  showNavigation={currentCards.length > 1}
+                />
+              ) : (
+                <WritingMode 
+                  card={currentCards[currentCardIndex]} 
+                  onAnswer={onAnswer}
+                  onNext={onNext}
+                  onPrevious={onPrevious}
+                  showNavigation={currentCards.length > 1}
+                />
+              )}
+            </div>
           )}
         </div>
       </div>
