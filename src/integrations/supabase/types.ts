@@ -9,7 +9,86 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cards: {
+        Row: {
+          created_at: string
+          deck_id: string
+          difficulty: number
+          has_been_wrong: boolean
+          id: string
+          last_reviewed: string
+          meaning: string
+          next_review: string
+          reading: string
+          review_count: number
+          user_id: string
+          was_wrong_in_session: boolean
+          word: string
+        }
+        Insert: {
+          created_at?: string
+          deck_id: string
+          difficulty?: number
+          has_been_wrong?: boolean
+          id?: string
+          last_reviewed?: string
+          meaning: string
+          next_review?: string
+          reading: string
+          review_count?: number
+          user_id: string
+          was_wrong_in_session?: boolean
+          word: string
+        }
+        Update: {
+          created_at?: string
+          deck_id?: string
+          difficulty?: number
+          has_been_wrong?: boolean
+          id?: string
+          last_reviewed?: string
+          meaning?: string
+          next_review?: string
+          reading?: string
+          review_count?: number
+          user_id?: string
+          was_wrong_in_session?: boolean
+          word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cards_deck_id_fkey"
+            columns: ["deck_id"]
+            isOneToOne: false
+            referencedRelation: "decks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      decks: {
+        Row: {
+          created_at: string
+          id: string
+          is_imported: boolean
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_imported?: boolean
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_imported?: boolean
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

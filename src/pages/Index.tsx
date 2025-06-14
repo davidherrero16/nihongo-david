@@ -1,5 +1,9 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useSupabaseDecks } from "@/hooks/useSupabaseDecks";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { BookOpen, List, Brain, PenTool, Calculator, FileDown, Settings, LogOut, Plus } from "lucide-react";
 import AddCardForm from "@/components/AddCardForm";
 import FlashCard from "@/components/FlashCard";
 import WritingMode from "@/components/WritingMode";
@@ -7,20 +11,68 @@ import CardList from "@/components/CardList";
 import StudySession from "@/components/StudySession";
 import DeckSelector from "@/components/DeckSelector";
 import DeckStats from "@/components/DeckStats";
-import { useDecks } from "@/hooks/useDecks";
-import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, List, Brain, PenTool, Calculator, FileDown, Settings } from "lucide-react";
 import NumberExercise from "@/components/NumberExercise";
 import ImportDeck from "@/components/ImportDeck";
 import KanaExercise from "@/components/KanaExercise";
 
 const Index = () => {
-  const { decks, addCard, createDeck, deleteCard, updateCardDifficulty, getCardsForReview, resetProgress, importDeck, deleteDeck, getDeckStats, resetSessionMarks } = useDecks();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  
+  const { 
+    decks, 
+    loading: decksLoading,
+    addCard, 
+    createDeck, 
+    deleteCard, 
+    updateCardDifficulty, 
+    getCardsForReview, 
+    resetProgress, 
+    importDeck, 
+    deleteDeck, 
+    getDeckStats, 
+    resetSessionMarks 
+  } = useSupabaseDecks();
+
   const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'import' | 'kana' | 'session'>('study');
   const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [currentDeckId, setCurrentDeckId] = useState<string>('default');
+  const [currentDeckId, setCurrentDeckId] = useState<string>('');
   const [packSize, setPackSize] = useState<10 | 15>(10);
+
+  // Establecer el primer deck como actual cuando se carguen
+  useEffect(() => {
+    if (decks.length > 0 && !currentDeckId) {
+      setCurrentDeckId(decks[0].id);
+    }
+  }, [decks, currentDeckId]);
+
+  // Redireccionar si no está autenticado
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  if (authLoading || decksLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <BookOpen className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth
+  }
 
   const reviewCards = getCardsForReview(currentDeckId);
   const currentDeck = decks.find(deck => deck.id === currentDeckId);
@@ -64,60 +116,71 @@ const Index = () => {
               <BookOpen className="h-6 w-6" />
               Tarjetas Japonés
             </h1>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex items-center gap-4">
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button
+                  variant={currentView === 'study' ? 'default' : 'outline'}
+                  onClick={() => setCurrentView('study')}
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <Brain className="h-4 w-4" />
+                  <span className="hidden sm:inline">Estudiar</span>
+                </Button>
+                <Button
+                  variant={currentView === 'numbers' ? 'default' : 'outline'}
+                  onClick={() => setCurrentView('numbers')}
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <Calculator className="h-4 w-4" />
+                  <span className="hidden sm:inline">Números</span>
+                </Button>
+                <Button
+                  variant={currentView === 'kana' ? 'default' : 'outline'}
+                  onClick={() => setCurrentView('kana')}
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <span className="text-sm">あ</span>
+                  <span className="hidden sm:inline">Kana</span>
+                </Button>
+                <Button
+                  variant={currentView === 'add' ? 'default' : 'outline'}
+                  onClick={() => setCurrentView('add')}
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Añadir</span>
+                </Button>
+                <Button
+                  variant={currentView === 'import' ? 'default' : 'outline'}
+                  onClick={() => setCurrentView('import')}
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <FileDown className="h-4 w-4" />
+                  <span className="hidden sm:inline">Importar</span>
+                </Button>
+                <Button
+                  variant={currentView === 'list' ? 'default' : 'outline'}
+                  onClick={() => setCurrentView('list')}
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <List className="h-4 w-4" />
+                  <span className="hidden sm:inline">Lista</span>
+                </Button>
+              </div>
               <Button
-                variant={currentView === 'study' ? 'default' : 'outline'}
-                onClick={() => setCurrentView('study')}
+                variant="ghost"
                 size="sm"
+                onClick={handleSignOut}
                 className="flex items-center gap-1"
               >
-                <Brain className="h-4 w-4" />
-                <span className="hidden sm:inline">Estudiar</span>
-              </Button>
-              <Button
-                variant={currentView === 'numbers' ? 'default' : 'outline'}
-                onClick={() => setCurrentView('numbers')}
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <Calculator className="h-4 w-4" />
-                <span className="hidden sm:inline">Números</span>
-              </Button>
-              <Button
-                variant={currentView === 'kana' ? 'default' : 'outline'}
-                onClick={() => setCurrentView('kana')}
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <span className="text-sm">あ</span>
-                <span className="hidden sm:inline">Kana</span>
-              </Button>
-              <Button
-                variant={currentView === 'add' ? 'default' : 'outline'}
-                onClick={() => setCurrentView('add')}
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Añadir</span>
-              </Button>
-              <Button
-                variant={currentView === 'import' ? 'default' : 'outline'}
-                onClick={() => setCurrentView('import')}
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <FileDown className="h-4 w-4" />
-                <span className="hidden sm:inline">Importar</span>
-              </Button>
-              <Button
-                variant={currentView === 'list' ? 'default' : 'outline'}
-                onClick={() => setCurrentView('list')}
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <List className="h-4 w-4" />
-                <span className="hidden sm:inline">Lista</span>
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">Salir</span>
               </Button>
             </div>
           </div>
@@ -151,8 +214,10 @@ const Index = () => {
                 }}
                 onCreateDeck={(name) => {
                   const newDeckId = createDeck(name);
-                  setCurrentDeckId(newDeckId);
-                  setCurrentCardIndex(0);
+                  if (newDeckId) {
+                    setCurrentDeckId(newDeckId);
+                    setCurrentCardIndex(0);
+                  }
                 }}
               />
             </div>
@@ -309,7 +374,9 @@ const Index = () => {
                 onSelectDeck={setCurrentDeckId}
                 onCreateDeck={(name) => {
                   const newDeckId = createDeck(name);
-                  setCurrentDeckId(newDeckId);
+                  if (newDeckId) {
+                    setCurrentDeckId(newDeckId);
+                  }
                 }}
               />
             </div>
@@ -337,7 +404,9 @@ const Index = () => {
                 onSelectDeck={setCurrentDeckId}
                 onCreateDeck={(name) => {
                   const newDeckId = createDeck(name);
-                  setCurrentDeckId(newDeckId);
+                  if (newDeckId) {
+                    setCurrentDeckId(newDeckId);
+                  }
                 }}
               />
             </div>
@@ -347,12 +416,12 @@ const Index = () => {
               onDeleteCard={(id) => deleteCard(id, currentDeckId)} 
               onResetProgress={() => resetProgress(currentDeckId)}
               onDeleteDeck={() => {
-                if (currentDeckId !== 'default') {
+                if (currentDeckId && decks.length > 1) {
                   deleteDeck(currentDeckId);
-                  setCurrentDeckId('default');
+                  setCurrentDeckId(decks.find(d => d.id !== currentDeckId)?.id || '');
                 }
               }}
-              isDeletable={currentDeckId !== 'default'}
+              isDeletable={decks.length > 1}
             />
           </div>
         )}
