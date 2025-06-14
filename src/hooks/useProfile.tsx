@@ -44,14 +44,25 @@ export const useProfile = () => {
           throw error;
         }
       } else {
-        // Parsear el display_name si es un JSON string
+        // Limpiar el display_name si es un JSON string malformado
         let displayName = data.display_name;
-        if (displayName && displayName.startsWith('{')) {
+        if (displayName && (displayName.startsWith('{') || displayName.includes('"display_name"'))) {
           try {
-            const parsed = JSON.parse(displayName);
-            displayName = parsed.display_name || displayName;
+            // Si parece JSON, intentar parsearlo
+            if (displayName.startsWith('{')) {
+              const parsed = JSON.parse(displayName);
+              displayName = parsed.display_name || displayName;
+            } else {
+              // Si contiene "display_name" pero no es JSON válido, extraer el valor
+              const match = displayName.match(/"display_name":"([^"]+)"/);
+              if (match) {
+                displayName = match[1];
+              }
+            }
           } catch (e) {
             console.log('Display name no es JSON válido, usando como está');
+            // Si falla el parseo, usar el email como fallback
+            displayName = user.email?.split('@')[0] || 'Usuario';
           }
         }
         

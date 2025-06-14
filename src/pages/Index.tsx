@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSupabaseDecks } from "@/hooks/useSupabaseDecks";
@@ -6,7 +7,6 @@ import Header from "@/components/Header";
 import LoadingScreen from "@/components/LoadingScreen";
 import StudyView from "@/components/StudyView";
 import AddCardView from "@/components/AddCardView";
-import ImportView from "@/components/ImportView";
 import CardListView from "@/components/CardListView";
 import StudySession from "@/components/StudySession";
 import NumberExercise from "@/components/NumberExercise";
@@ -33,7 +33,7 @@ const Index = () => {
     resetSessionMarks 
   } = useSupabaseDecks();
 
-  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'import' | 'kana' | 'session' | 'profile'>('study');
+  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'kana' | 'session' | 'profile'>('study');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [currentDeckId, setCurrentDeckId] = useState<string>('');
 
@@ -111,6 +111,14 @@ const Index = () => {
     }
   };
 
+  const handleImport = async (name: string, cards: any[]) => {
+    const newDeckId = await importDeck(name, cards);
+    if (newDeckId) {
+      setCurrentDeckId(newDeckId);
+      setCurrentCardIndex(0);
+    }
+  };
+
   if (authLoading || decksLoading) {
     return <LoadingScreen />;
   }
@@ -151,6 +159,7 @@ const Index = () => {
               onPrevious={prevCard}
               currentCards={currentCards}
               currentCardIndex={currentCardIndex}
+              onImport={handleImport}
             />
           </>
         )}
@@ -184,10 +193,6 @@ const Index = () => {
             }
           />
         )}
-        
-        {currentView === 'import' && (
-          <ImportView onImport={importDeck} />
-        )}
 
         {currentView === 'list' && (
           <CardListView
@@ -199,6 +204,7 @@ const Index = () => {
             onDeleteCard={(id) => deleteCard(id, currentDeckId)}
             onResetProgress={() => resetProgress(currentDeckId)}
             onDeleteDeck={handleDeleteDeck}
+            onImport={handleImport}
           />
         )}
       </main>

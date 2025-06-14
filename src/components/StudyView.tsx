@@ -1,13 +1,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Brain, PenTool, Settings } from "lucide-react";
+import { Brain, PenTool, Settings, Upload } from "lucide-react";
 import { Card, Deck } from "@/hooks/useSupabaseDecks";
 import DeckSelector from "@/components/DeckSelector";
 import DeckStats from "@/components/DeckStats";
 import FlashCard from "@/components/FlashCard";
 import WritingMode from "@/components/WritingMode";
 import EmptyState from "@/components/EmptyState";
+import ImportPopup from "@/components/ImportPopup";
 
 interface StudyViewProps {
   decks: Deck[];
@@ -24,6 +25,7 @@ interface StudyViewProps {
   onPrevious: () => void;
   currentCards: Card[];
   currentCardIndex: number;
+  onImport: (name: string, cards: any[]) => void;
 }
 
 const StudyView = ({
@@ -40,7 +42,8 @@ const StudyView = ({
   onNext,
   onPrevious,
   currentCards,
-  currentCardIndex
+  currentCardIndex,
+  onImport
 }: StudyViewProps) => {
   const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [packSize, setPackSize] = useState<10 | 15>(10);
@@ -51,7 +54,29 @@ const StudyView = ({
   if (!currentDeck || currentDeck.cards.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-2">
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
+          <div className="flex-1 w-full">
+            <DeckSelector
+              decks={decksWithCards}
+              currentDeckId={currentDeckId}
+              onSelectDeck={(deckId) => {
+                onSelectDeck(deckId);
+              }}
+              onCreateDeck={onCreateDeck}
+            />
+          </div>
+          <ImportPopup onImport={onImport} />
+        </div>
+        <EmptyState onAddCard={onAddCard} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto px-2">
+      {/* Selector de deck con botón de importar */}
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
+        <div className="flex-1 w-full">
           <DeckSelector
             decks={decksWithCards}
             currentDeckId={currentDeckId}
@@ -61,23 +86,7 @@ const StudyView = ({
             onCreateDeck={onCreateDeck}
           />
         </div>
-        <EmptyState onAddCard={onAddCard} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-2xl mx-auto px-2">
-      {/* Selector de deck */}
-      <div className="mb-4 sm:mb-6">
-        <DeckSelector
-          decks={decksWithCards}
-          currentDeckId={currentDeckId}
-          onSelectDeck={(deckId) => {
-            onSelectDeck(deckId);
-          }}
-          onCreateDeck={onCreateDeck}
-        />
+        <ImportPopup onImport={onImport} />
       </div>
 
       {/* Estadísticas del deck */}
@@ -94,7 +103,7 @@ const StudyView = ({
               className="text-xs sm:text-sm"
             >
               <Brain className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Modo Fácil
+              Modo fácil
             </Button>
             <Button
               variant={studyMode === 'hard' ? 'default' : 'outline'}
@@ -103,7 +112,7 @@ const StudyView = ({
               className="text-xs sm:text-sm"
             >
               <PenTool className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Modo Difícil
+              Modo difícil
             </Button>
           </div>
           
@@ -153,7 +162,7 @@ const StudyView = ({
             disabled={currentCards.length === 0}
           >
             <Brain className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-            Comenzar Sesión ({Math.min(currentCards.length, packSize)} tarjetas)
+            Comenzar sesión ({Math.min(currentCards.length, packSize)} tarjetas)
           </Button>
         </div>
 
