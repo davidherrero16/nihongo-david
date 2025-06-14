@@ -56,9 +56,14 @@ const Index = () => {
   }, [user, authLoading, navigate]);
 
   const handleSignOut = async () => {
-    console.log('Iniciando proceso de cierre de sesión desde Header');
-    await signOut();
-    navigate('/auth');
+    console.log('Index: Iniciando proceso de cierre de sesión');
+    try {
+      await signOut();
+      console.log('Index: Sesión cerrada, redirigiendo a /auth');
+      navigate('/auth');
+    } catch (error) {
+      console.error('Index: Error al cerrar sesión:', error);
+    }
   };
 
   const handleCreateDeck = async (name: string) => {
@@ -68,19 +73,6 @@ const Index = () => {
       setCurrentCardIndex(0);
     }
   };
-
-  if (authLoading || decksLoading) {
-    return <LoadingScreen />;
-  }
-
-  if (!user) {
-    return null; // Will redirect to auth
-  }
-
-  const reviewCards = getCardsForReview(currentDeckId);
-  const currentDeck = decks.find(deck => deck.id === currentDeckId);
-  const currentCards = reviewCards.length > 0 ? reviewCards : (currentDeck?.cards || []);
-  const deckStats = getDeckStats(currentDeckId);
 
   const nextCard = () => {
     if (currentCards.length > 0) {
@@ -120,6 +112,19 @@ const Index = () => {
       setCurrentDeckId(decks.find(d => d.id !== currentDeckId)?.id || '');
     }
   };
+
+  if (authLoading || decksLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth
+  }
+
+  const reviewCards = getCardsForReview(currentDeckId);
+  const currentDeck = decks.find(deck => deck.id === currentDeckId);
+  const currentCards = reviewCards.length > 0 ? reviewCards : (currentDeck?.cards || []);
+  const deckStats = getDeckStats(currentDeckId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 overflow-x-hidden">
@@ -189,7 +194,7 @@ const Index = () => {
             decks={decks}
             currentDeckId={currentDeckId}
             currentDeck={currentDeck}
-            onSelectDeck={setCurrentDeckId}
+            onSelectDeck={handleSelectDeck}
             onCreateDeck={handleCreateDeck}
             onDeleteCard={(id) => deleteCard(id, currentDeckId)}
             onResetProgress={() => resetProgress(currentDeckId)}

@@ -31,7 +31,7 @@ export const useSupabaseDecks = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Cargar decks desde Supabase
+  // Cargar decks desde Supabase con paginación para tarjetas grandes
   useEffect(() => {
     if (user) {
       loadDecks();
@@ -42,23 +42,56 @@ export const useSupabaseDecks = () => {
     if (!user) return;
 
     try {
-      // Cargar decks
+      console.log('Iniciando carga de mazos para usuario:', user.id);
+
+      // Cargar decks primero
       const { data: decksData, error: decksError } = await supabase
         .from('decks')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: true });
 
-      if (decksError) throw decksError;
+      if (decksError) {
+        console.error('Error cargando decks:', decksError);
+        throw decksError;
+      }
 
-      // Cargar tarjetas
-      const { data: cardsData, error: cardsError } = await supabase
-        .from('cards')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
+      console.log(`Cargados ${decksData?.length || 0} mazos`);
 
-      if (cardsError) throw cardsError;
+      // Cargar todas las tarjetas sin límite usando múltiples consultas si es necesario
+      let allCards: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data: cardsPage, error: cardsError } = await supabase
+          .from('cards')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true })
+          .range(from, from + pageSize - 1);
+
+        if (cardsError) {
+          console.error('Error cargando tarjetas:', cardsError);
+          throw cardsError;
+        }
+
+        if (cardsPage && cardsPage.length > 0) {
+          allCards = [...allCards, ...cardsPage];
+          console.log(`Cargadas ${cardsPage.length} tarjetas (página ${Math.floor(from / pageSize) + 1})`);
+          
+          if (cardsPage.length < pageSize) {
+            hasMore = false;
+          } else {
+            from += pageSize;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
+
+      console.log(`Total de tarjetas cargadas: ${allCards.length}`);
 
       // Agrupar tarjetas por deck
       const decksWithCards: Deck[] = (decksData || []).map(deck => ({
@@ -66,7 +99,7 @@ export const useSupabaseDecks = () => {
         name: deck.name,
         isImported: deck.is_imported,
         createdAt: new Date(deck.created_at),
-        cards: (cardsData || [])
+        cards: allCards
           .filter(card => card.deck_id === deck.id)
           .map(card => ({
             id: card.id,
@@ -83,17 +116,23 @@ export const useSupabaseDecks = () => {
           }))
       }));
 
+      // Log del conteo de tarjetas por deck
+      decksWithCards.forEach(deck => {
+        console.log(`Deck "${deck.name}": ${deck.cards.length} tarjetas`);
+      });
+
       setDecks(decksWithCards);
 
       // Si no hay decks, crear uno por defecto
       if (decksWithCards.length === 0) {
+        console.log('No hay mazos, creando uno por defecto');
         await createDeck('Mis Tarjetas');
       }
     } catch (error: any) {
       console.error('Error loading decks:', error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar los mazos",
+        description: `No se pudieron cargar los mazos: ${error.message || 'Error desconocido'}`,
         variant: "destructive",
       });
     } finally {
@@ -353,7 +392,6 @@ export const useSupabaseDecks = () => {
     try {
       console.log(`Iniciando importación de ${cards.length} tarjetas`);
       
-      // Crear el deck
       const { data: deckData, error: deckError } = await supabase
         .from('decks')
         .insert({
@@ -371,8 +409,7 @@ export const useSupabaseDecks = () => {
 
       console.log('Deck creado:', deckData.id);
 
-      // Procesar tarjetas en lotes más pequeños para mejor rendimiento
-      const batchSize = 50; // Reducido para mejor estabilidad
+      const batchSize = 50;
       const now = new Date();
       let totalInserted = 0;
 
@@ -408,7 +445,6 @@ export const useSupabaseDecks = () => {
         totalInserted += insertedCards?.length || 0;
         console.log(`Lote insertado exitosamente. Total insertadas: ${totalInserted}`);
 
-        // Pequeña pausa entre lotes para evitar sobrecargar la base de datos
         if (i + batchSize < cards.length) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -416,7 +452,6 @@ export const useSupabaseDecks = () => {
 
       console.log(`Importación completada: ${totalInserted} tarjetas`);
 
-      // Recargar datos después de la importación
       await loadDecks();
       
       toast({
