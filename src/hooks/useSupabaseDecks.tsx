@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -30,16 +30,37 @@ export const useSupabaseDecks = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  // Refs para evitar bucles infinitos
+  const isLoadingRef = useRef(false);
+  const hasInitializedRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Cargar decks desde Supabase con paginación para tarjetas grandes
+  // Cargar decks desde Supabase con protecciones
   useEffect(() => {
-    if (user) {
-      loadDecks();
+    if (!user || isLoadingRef.current || hasInitializedRef.current) {
+      return;
     }
+
+    console.log('Iniciando carga única de mazos para usuario:', user.id);
+    loadDecks();
+    hasInitializedRef.current = true;
   }, [user]);
 
   const loadDecks = async () => {
-    if (!user) return;
+    if (!user || isLoadingRef.current) {
+      console.log('Carga cancelada: usuario no encontrado o carga en progreso');
+      return;
+    }
+
+    isLoadingRef.current = true;
+    
+    // Cancelar petición anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    abortControllerRef.current = new AbortController();
 
     try {
       console.log('Iniciando carga de mazos para usuario:', user.id);
@@ -49,7 +70,8 @@ export const useSupabaseDecks = () => {
         .from('decks')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .abortSignal(abortControllerRef.current.signal);
 
       if (decksError) {
         console.error('Error cargando decks:', decksError);
@@ -58,40 +80,20 @@ export const useSupabaseDecks = () => {
 
       console.log(`Cargados ${decksData?.length || 0} mazos`);
 
-      // Cargar todas las tarjetas sin límite usando múltiples consultas si es necesario
-      let allCards: any[] = [];
-      let from = 0;
-      const pageSize = 1000;
-      let hasMore = true;
+      // Cargar todas las tarjetas en una sola consulta más eficiente
+      const { data: allCards, error: cardsError } = await supabase
+        .from('cards')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .abortSignal(abortControllerRef.current.signal);
 
-      while (hasMore) {
-        const { data: cardsPage, error: cardsError } = await supabase
-          .from('cards')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: true })
-          .range(from, from + pageSize - 1);
-
-        if (cardsError) {
-          console.error('Error cargando tarjetas:', cardsError);
-          throw cardsError;
-        }
-
-        if (cardsPage && cardsPage.length > 0) {
-          allCards = [...allCards, ...cardsPage];
-          console.log(`Cargadas ${cardsPage.length} tarjetas (página ${Math.floor(from / pageSize) + 1})`);
-          
-          if (cardsPage.length < pageSize) {
-            hasMore = false;
-          } else {
-            from += pageSize;
-          }
-        } else {
-          hasMore = false;
-        }
+      if (cardsError) {
+        console.error('Error cargando tarjetas:', cardsError);
+        throw cardsError;
       }
 
-      console.log(`Total de tarjetas cargadas: ${allCards.length}`);
+      console.log(`Total de tarjetas cargadas: ${allCards?.length || 0}`);
 
       // Agrupar tarjetas por deck
       const decksWithCards: Deck[] = (decksData || []).map(deck => ({
@@ -99,7 +101,7 @@ export const useSupabaseDecks = () => {
         name: deck.name,
         isImported: deck.is_imported,
         createdAt: new Date(deck.created_at),
-        cards: allCards
+        cards: (allCards || [])
           .filter(card => card.deck_id === deck.id)
           .map(card => ({
             id: card.id,
@@ -129,6 +131,11 @@ export const useSupabaseDecks = () => {
         await createDeck('Mis Tarjetas');
       }
     } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('Petición cancelada');
+        return;
+      }
+      
       console.error('Error loading decks:', error);
       toast({
         title: "Error",
@@ -136,6 +143,7 @@ export const useSupabaseDecks = () => {
         variant: "destructive",
       });
     } finally {
+      isLoadingRef.current = false;
       setLoading(false);
     }
   };
@@ -165,7 +173,29 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks();
+      // Actualizar estado local sin recargar todo
+      setDecks(prevDecks => 
+        prevDecks.map(deck => 
+          deck.id === deckId 
+            ? {
+                ...deck,
+                cards: [...deck.cards, {
+                  id: data.id,
+                  word: data.word,
+                  reading: data.reading,
+                  meaning: data.meaning,
+                  createdAt: new Date(data.created_at),
+                  difficulty: data.difficulty,
+                  lastReviewed: new Date(data.last_reviewed),
+                  nextReview: new Date(data.next_review),
+                  reviewCount: data.review_count,
+                  hasBeenWrong: data.has_been_wrong,
+                  wasWrongInSession: data.was_wrong_in_session
+                }]
+              }
+            : deck
+        )
+      );
       
       toast({
         title: "Tarjeta añadida",
@@ -197,7 +227,16 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks();
+      // Actualizar estado local
+      const newDeck: Deck = {
+        id: data.id,
+        name: data.name,
+        cards: [],
+        isImported: data.is_imported,
+        createdAt: new Date(data.created_at)
+      };
+
+      setDecks(prevDecks => [...prevDecks, newDeck]);
       
       toast({
         title: "Mazo creado",
@@ -262,7 +301,14 @@ export const useSupabaseDecks = () => {
 
       console.log(`Card ${cardId} deleted successfully`);
       
-      await loadDecks();
+      // Actualizar estado local sin recargar
+      setDecks(prevDecks => 
+        prevDecks.map(deck => 
+          deck.id === deckId 
+            ? { ...deck, cards: deck.cards.filter(card => card.id !== cardId) }
+            : deck
+        )
+      );
       
       toast({
         title: "Tarjeta eliminada",
@@ -321,7 +367,29 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks();
+      // Actualizar estado local
+      setDecks(prevDecks => 
+        prevDecks.map(deck => 
+          deck.id === deckId 
+            ? {
+                ...deck,
+                cards: deck.cards.map(card => 
+                  card.id === cardId 
+                    ? {
+                        ...card,
+                        difficulty: newDifficulty,
+                        lastReviewed: now,
+                        nextReview: nextReview,
+                        reviewCount: card.reviewCount + 1,
+                        hasBeenWrong: card.hasBeenWrong || !known,
+                        wasWrongInSession: known ? false : true
+                      }
+                    : card
+                )
+              }
+            : deck
+        )
+      );
     } catch (error: any) {
       console.error('Error updating card:', error);
       toast({
@@ -344,7 +412,17 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks();
+      // Actualizar estado local
+      setDecks(prevDecks => 
+        prevDecks.map(deck => 
+          deck.id === deckId 
+            ? {
+                ...deck,
+                cards: deck.cards.map(card => ({ ...card, wasWrongInSession: false }))
+              }
+            : deck
+        )
+      );
     } catch (error: any) {
       console.error('Error resetting session marks:', error);
     }
@@ -370,7 +448,25 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks();
+      // Actualizar estado local
+      setDecks(prevDecks => 
+        prevDecks.map(deck => 
+          deck.id === deckId 
+            ? {
+                ...deck,
+                cards: deck.cards.map(card => ({
+                  ...card,
+                  difficulty: 0,
+                  lastReviewed: now,
+                  nextReview: now,
+                  reviewCount: 0,
+                  hasBeenWrong: false,
+                  wasWrongInSession: false
+                }))
+              }
+            : deck
+        )
+      );
       
       toast({
         title: "Progreso reiniciado",
@@ -452,7 +548,28 @@ export const useSupabaseDecks = () => {
 
       console.log(`Importación completada: ${totalInserted} tarjetas`);
 
-      await loadDecks();
+      // Actualizar estado local sin recargar todo
+      const newDeck: Deck = {
+        id: deckData.id,
+        name: deckData.name,
+        isImported: deckData.is_imported,
+        createdAt: new Date(deckData.created_at),
+        cards: cards.map((card, index) => ({
+          id: `temp_${index}`, // ID temporal, se actualizará en la próxima carga
+          word: card.word,
+          reading: card.reading,
+          meaning: card.meaning,
+          createdAt: now,
+          difficulty: 0,
+          lastReviewed: now,
+          nextReview: now,
+          reviewCount: 0,
+          hasBeenWrong: false,
+          wasWrongInSession: false
+        }))
+      };
+
+      setDecks(prevDecks => [...prevDecks, newDeck]);
       
       toast({
         title: "¡Deck importado!",
@@ -483,7 +600,8 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks();
+      // Actualizar estado local
+      setDecks(prevDecks => prevDecks.filter(deck => deck.id !== deckId));
       
       toast({
         title: "Mazo eliminado",
@@ -526,6 +644,15 @@ export const useSupabaseDecks = () => {
   };
 
   const getAllCards = () => decks.flatMap(deck => deck.cards);
+
+  // Cleanup al desmontar
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     decks,
