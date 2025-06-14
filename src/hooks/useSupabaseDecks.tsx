@@ -180,18 +180,25 @@ export const useSupabaseDecks = () => {
   const deleteCard = async (cardId: string, deckId: string) => {
     if (!user) {
       console.error('No user found for deleteCard operation');
+      toast({
+        title: "Error",
+        description: "No hay usuario autenticado",
+        variant: "destructive",
+      });
       return;
     }
 
-    console.log(`Attempting to delete card ${cardId} from deck ${deckId} for user ${user.id}`);
+    console.log(`Starting deletion process for card ${cardId} from deck ${deckId} for user ${user.id}`);
 
     try {
-      // Verificar que la tarjeta existe y pertenece al usuario
+      // First verify the card exists and belongs to the user
+      console.log('Verifying card ownership...');
       const { data: existingCard, error: fetchError } = await supabase
         .from('cards')
-        .select('id, user_id')
+        .select('id, user_id, deck_id')
         .eq('id', cardId)
         .eq('user_id', user.id)
+        .eq('deck_id', deckId)
         .single();
 
       if (fetchError) {
@@ -200,25 +207,29 @@ export const useSupabaseDecks = () => {
       }
 
       if (!existingCard) {
-        console.error('Card not found or does not belong to user');
+        console.error('Card not found or access denied');
         throw new Error('La tarjeta no existe o no tienes permisos para eliminarla');
       }
 
-      console.log('Card verified, proceeding with deletion');
+      console.log('Card verified successfully, proceeding with deletion...');
 
-      const { error } = await supabase
+      // Delete the card
+      const { error: deleteError } = await supabase
         .from('cards')
         .delete()
         .eq('id', cardId)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('deck_id', deckId);
 
-      if (error) {
-        console.error('Error deleting card:', error);
-        throw error;
+      if (deleteError) {
+        console.error('Error deleting card:', deleteError);
+        throw new Error(`Error eliminando la tarjeta: ${deleteError.message}`);
       }
 
-      console.log('Card deleted successfully');
-      await loadDecks(); // Recargar datos
+      console.log(`Card ${cardId} deleted successfully`);
+      
+      // Reload data to reflect changes
+      await loadDecks();
       
       toast({
         title: "Tarjeta eliminada",
@@ -228,9 +239,11 @@ export const useSupabaseDecks = () => {
       console.error('Error in deleteCard function:', error);
       toast({
         title: "Error",
-        description: `No se pudo eliminar la tarjeta: ${error.message || 'Error desconocido'}`,
+        description: error.message || 'No se pudo eliminar la tarjeta',
         variant: "destructive",
       });
+      // Re-throw the error so the calling component can handle it
+      throw error;
     }
   };
 

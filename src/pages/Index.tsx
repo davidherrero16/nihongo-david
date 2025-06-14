@@ -12,6 +12,7 @@ import StudySession from "@/components/StudySession";
 import NumberExercise from "@/components/NumberExercise";
 import KanaExercise from "@/components/KanaExercise";
 import InactivityWarning from "@/components/InactivityWarning";
+import WelcomeMessage from "@/components/WelcomeMessage";
 import { useInactivityManager } from "@/hooks/useInactivityManager";
 
 const Index = () => {
@@ -54,8 +55,13 @@ const Index = () => {
   }, [user, authLoading, navigate]);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
+    console.log('Header sign out triggered');
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error during sign out:', error);
+    }
   };
 
   const handleCreateDeck = async (name: string) => {
@@ -127,6 +133,28 @@ const Index = () => {
       />
 
       <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full">
+        {currentView === 'study' && (
+          <>
+            <WelcomeMessage userName={user?.email?.split('@')[0]} />
+            <StudyView
+              decks={decks}
+              currentDeckId={currentDeckId}
+              onSelectDeck={handleSelectDeck}
+              onCreateDeck={handleCreateDeck}
+              reviewCards={reviewCards}
+              currentDeck={currentDeck}
+              deckStats={deckStats}
+              onStartSession={handleStartSession}
+              onAddCard={() => setCurrentView('add')}
+              onAnswer={handleAnswer}
+              onNext={nextCard}
+              onPrevious={prevCard}
+              currentCards={currentCards}
+              currentCardIndex={currentCardIndex}
+            />
+          </>
+        )}
+
         {currentView === 'session' && (
           <StudySession
             cards={currentCards}
@@ -136,25 +164,6 @@ const Index = () => {
             studyMode="easy"
             deckId={currentDeckId}
             onResetSessionMarks={() => resetSessionMarks(currentDeckId)}
-          />
-        )}
-
-        {currentView === 'study' && (
-          <StudyView
-            decks={decks}
-            currentDeckId={currentDeckId}
-            onSelectDeck={handleSelectDeck}
-            onCreateDeck={handleCreateDeck}
-            reviewCards={reviewCards}
-            currentDeck={currentDeck}
-            deckStats={deckStats}
-            onStartSession={handleStartSession}
-            onAddCard={() => setCurrentView('add')}
-            onAnswer={handleAnswer}
-            onNext={nextCard}
-            onPrevious={prevCard}
-            currentCards={currentCards}
-            currentCardIndex={currentCardIndex}
           />
         )}
 

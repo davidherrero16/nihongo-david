@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -48,15 +47,21 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
   };
 
   const handleDeleteCard = async (cardId: string) => {
-    console.log(`User clicked delete for card: ${cardId}`);
+    if (deletingCardId) return; // Prevent multiple concurrent deletions
+    
+    console.log(`Attempting to delete card: ${cardId}`);
     setDeletingCardId(cardId);
     
     try {
       await onDeleteCard(cardId);
+      console.log(`Card ${cardId} deleted successfully`);
     } catch (error) {
       console.error('Error during card deletion:', error);
     } finally {
-      setDeletingCardId(null);
+      // Reset the deleting state after a short delay to prevent UI flicker
+      setTimeout(() => {
+        setDeletingCardId(null);
+      }, 500);
     }
   };
 
@@ -169,7 +174,7 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -235,7 +240,7 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 p-0 text-red-500"
+                          className="h-8 w-8 p-0 text-red-500 hover:bg-red-50"
                           disabled={deletingCardId === card.id}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -252,7 +257,7 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => handleDeleteCard(card.id)}
-                            className="bg-red-600"
+                            className="bg-red-600 hover:bg-red-700"
                             disabled={deletingCardId === card.id}
                           >
                             {deletingCardId === card.id ? "Eliminando..." : "Eliminar"}
