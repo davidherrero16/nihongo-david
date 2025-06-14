@@ -24,28 +24,25 @@ interface SessionResult {
 }
 
 const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, deckId, onResetSessionMarks }: StudySessionProps) => {
+  // Tomar exactamente packSize tarjetas para la sesión
+  const initialCards = cards.slice(0, packSize);
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
   const [showSummary, setShowSummary] = useState(false);
   const [sessionCards, setSessionCards] = useState<CardType[]>(
-    cards.slice(0, packSize).map(card => ({ ...card, wasWrongInSession: false }))
+    initialCards.map(card => ({ ...card, wasWrongInSession: false }))
   );
   const [processedCards, setProcessedCards] = useState<Set<string>>(new Set());
 
   const currentCard = sessionCards[currentIndex];
-  const progress = (processedCards.size / cards.slice(0, packSize).length) * 100;
+  const totalCards = initialCards.length;
+  const progress = (processedCards.size / totalCards) * 100;
 
   const handleAnswer = (known: boolean) => {
     if (!currentCard) return;
 
-    // Marcar la tarjeta como incorrecta en sesión si es necesario
-    if (!known) {
-      setSessionCards(prev => prev.map(card => 
-        card.id === currentCard.id 
-          ? { ...card, wasWrongInSession: true }
-          : card
-      ));
-    }
+    console.log(`Respuesta para tarjeta ${currentCard.word}: ${known ? 'Correcta' : 'Incorrecta'}`);
 
     // Guardar resultado de la sesión
     const result: SessionResult = {
@@ -56,27 +53,38 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
 
     setSessionResults(prev => [...prev, result]);
     
-    // Actualizar la tarjeta
+    // Actualizar la tarjeta en la base de datos
     onUpdateCard(currentCard.id, known);
 
     if (known) {
-      // Si es correcta, marcar como procesada y avanzar
+      // Si es correcta, marcar como procesada y remover de la sesión
       setProcessedCards(prev => new Set([...prev, currentCard.id]));
       
       // Remover la tarjeta actual de sessionCards
       const newSessionCards = sessionCards.filter((_, index) => index !== currentIndex);
       setSessionCards(newSessionCards);
       
+      console.log(`Tarjeta ${currentCard.word} completada. Quedan ${newSessionCards.length} tarjetas`);
+      
       // Ajustar índice si es necesario
       if (currentIndex >= newSessionCards.length && newSessionCards.length > 0) {
         setCurrentIndex(0);
       } else if (newSessionCards.length === 0) {
+        console.log('Todas las tarjetas completadas, mostrando resumen');
         setShowSummary(true);
       }
     } else {
-      // Si es incorrecta, mantener en la ronda pero avanzar al siguiente
+      // Si es incorrecta, marcar como incorrecta en sesión y continuar
+      setSessionCards(prev => prev.map((card, index) => 
+        index === currentIndex 
+          ? { ...card, wasWrongInSession: true }
+          : card
+      ));
+      
+      console.log(`Tarjeta ${currentCard.word} marcada como incorrecta en sesión`);
+      
+      // Avanzar al siguiente índice
       if (currentIndex + 1 >= sessionCards.length) {
-        // Si estamos al final, volver al principio
         setCurrentIndex(0);
       } else {
         setCurrentIndex(prev => prev + 1);
@@ -85,6 +93,8 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   };
 
   const handleNext = () => {
+    if (sessionCards.length === 0) return;
+    
     if (currentIndex + 1 < sessionCards.length) {
       setCurrentIndex(prev => prev + 1);
     } else {
@@ -93,6 +103,8 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   };
 
   const handlePrevious = () => {
+    if (sessionCards.length === 0) return;
+    
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
     } else {
@@ -101,13 +113,12 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   };
 
   const handleFinishSession = () => {
-    // Resetear las marcas de sesión al finalizar
     onResetSessionMarks();
     setShowSummary(false);
     setCurrentIndex(0);
     setSessionResults([]);
     setProcessedCards(new Set());
-    setSessionCards(cards.slice(0, packSize).map(card => ({ ...card, wasWrongInSession: false })));
+    setSessionCards(initialCards.map(card => ({ ...card, wasWrongInSession: false })));
     onComplete();
   };
 
@@ -118,7 +129,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
       return;
     }
 
-    // Reiniciar con las tarjetas falladas, manteniendo su estado de sesión
+    // Reiniciar con las tarjetas falladas
     setSessionCards(failedCards.map(result => ({ ...result.card, wasWrongInSession: true })));
     setCurrentIndex(0);
     setSessionResults([]);
@@ -127,7 +138,6 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   };
 
   if (showSummary) {
-    const originalCardCount = cards.slice(0, packSize).length;
     const correctAnswers = sessionResults.filter(result => result.known).length;
     const incorrectAnswers = sessionResults.filter(result => !result.known).length;
 
@@ -143,7 +153,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
           <CardContent className="space-y-6">
             <div className="text-center">
               <div className="text-4xl font-bold text-primary mb-2">
-                {processedCards.size}/{originalCardCount}
+                {processedCards.size}/{totalCards}
               </div>
               <p className="text-muted-foreground">Tarjetas dominadas en esta sesión</p>
             </div>
@@ -216,15 +226,20 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
       <div className="space-y-2">
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>Progreso de la sesión</span>
-          <span>{processedCards.size} / {cards.slice(0, packSize).length} completadas</span>
+          <span>{processedCards.size} / {totalCards} completadas</span>
         </div>
         <Progress value={progress} className="h-2" />
         <div className="text-center text-sm text-muted-foreground">
           En ronda actual: {sessionCards.length} tarjetas
+          {sessionCards.filter(card => card.wasWrongInSession).length > 0 && (
+            <span className="text-orange-600 ml-2">
+              ({sessionCards.filter(card => card.wasWrongInSession).length} incorrectas)
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Usar FlashCard para ambos modos */}
+      {/* Usar FlashCard para mostrar la tarjeta */}
       <FlashCard 
         card={currentCard}
         onAnswer={handleAnswer}

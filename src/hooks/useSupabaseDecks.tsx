@@ -338,15 +338,20 @@ export const useSupabaseDecks = () => {
       let newDifficulty: number;
       
       if (known) {
+        // Si la tarjeta fue incorrecta en esta sesión, solo sube 0.5 niveles
         const increment = currentCard.wasWrongInSession ? 0.5 : 1;
         newDifficulty = Math.min(10, currentCard.difficulty + increment);
+        console.log(`Tarjeta ${currentCard.word}: dificultad ${currentCard.difficulty} -> ${newDifficulty} (incremento: ${increment}, fue incorrecta en sesión: ${currentCard.wasWrongInSession})`);
       } else {
+        // Si es incorrecta, baja 1 nivel
         newDifficulty = Math.max(0, currentCard.difficulty - 1);
+        console.log(`Tarjeta ${currentCard.word}: dificultad ${currentCard.difficulty} -> ${newDifficulty} (respuesta incorrecta)`);
       }
       
       const now = new Date();
       const nextReview = new Date(now);
       
+      // Intervalos basados en los niveles 0-10 (en días) - sistema mejorado
       const intervals = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
       const intervalIndex = Math.floor(newDifficulty);
       const intervalDays = intervals[intervalIndex] || 89;
@@ -636,8 +641,8 @@ export const useSupabaseDecks = () => {
     if (!deck) return { nuevas: 0, revisar: 0, aprendidas: 0, porAprender: 0 };
 
     const nuevas = deck.cards.filter(card => card.reviewCount === 0).length;
-    const revisar = deck.cards.filter(card => card.hasBeenWrong && card.difficulty < 5).length;
-    const aprendidas = deck.cards.filter(card => card.difficulty >= 5).length;
+    const revisar = deck.cards.filter(card => card.hasBeenWrong && card.difficulty < 7).length;
+    const aprendidas = deck.cards.filter(card => card.difficulty >= 7).length; // Cambio de 5 a 7 para el nuevo rango
     const porAprender = deck.cards.length - aprendidas;
 
     return { nuevas, revisar, aprendidas, porAprender };
