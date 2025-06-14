@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Card } from "@/hooks/useDecks";
+import { Card } from "@/hooks/useSupabaseDecks";
 import { Trash2, RefreshCw, Search, ArrowUpDown, FileX } from "lucide-react";
 import {
   Table,
@@ -36,6 +36,7 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState<keyof Card>("word");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
   const handleSort = (key: keyof Card) => {
     if (sortKey === key) {
@@ -43,6 +44,19 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
     } else {
       setSortKey(key);
       setSortDirection("asc");
+    }
+  };
+
+  const handleDeleteCard = async (cardId: string) => {
+    console.log(`User clicked delete for card: ${cardId}`);
+    setDeletingCardId(cardId);
+    
+    try {
+      await onDeleteCard(cardId);
+    } catch (error) {
+      console.error('Error during card deletion:', error);
+    } finally {
+      setDeletingCardId(null);
     }
   };
 
@@ -222,6 +236,7 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0 text-red-500"
+                          disabled={deletingCardId === card.id}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -230,16 +245,17 @@ const CardList = ({ cards, onDeleteCard, onResetProgress, onDeleteDeck, isDeleta
                         <AlertDialogHeader>
                           <AlertDialogTitle>¿Eliminar tarjeta?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            ¿Estás seguro de que quieres eliminar esta tarjeta? Esta acción no se puede deshacer.
+                            ¿Estás seguro de que quieres eliminar la tarjeta "{card.word}"? Esta acción no se puede deshacer.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <AlertDialogAction
-                            onClick={() => onDeleteCard(card.id)}
+                            onClick={() => handleDeleteCard(card.id)}
                             className="bg-red-600"
+                            disabled={deletingCardId === card.id}
                           >
-                            Eliminar
+                            {deletingCardId === card.id ? "Eliminando..." : "Eliminar"}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
