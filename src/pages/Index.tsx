@@ -33,7 +33,7 @@ const Index = () => {
     resetSessionMarks 
   } = useSupabaseDecks();
 
-  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'kana' | 'session' | 'profile'>('study');
+  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'kana' | 'session' | 'profile' | 'import'>('study');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [currentDeckId, setCurrentDeckId] = useState<string>('');
 

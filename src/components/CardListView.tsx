@@ -1,6 +1,7 @@
 
 import DeckSelector from "@/components/DeckSelector";
 import CardList from "@/components/CardList";
+import ImportPopup from "@/components/ImportPopup";
 import { Deck } from "@/hooks/useSupabaseDecks";
 
 interface CardListViewProps {
@@ -12,6 +13,7 @@ interface CardListViewProps {
   onDeleteCard: (id: string) => void;
   onResetProgress: () => void;
   onDeleteDeck: () => void;
+  onImport: (name: string, cards: any[]) => Promise<void>;
 }
 
 const CardListView = ({
@@ -22,7 +24,8 @@ const CardListView = ({
   onCreateDeck,
   onDeleteCard,
   onResetProgress,
-  onDeleteDeck
+  onDeleteDeck,
+  onImport
 }: CardListViewProps) => {
   return (
     <div className="max-w-4xl mx-auto">
@@ -33,6 +36,10 @@ const CardListView = ({
           onSelectDeck={onSelectDeck}
           onCreateDeck={onCreateDeck}
         />
+      </div>
+      
+      <div className="mb-4 flex justify-end">
+        <ImportPopup onImport={onImport} />
       </div>
       
       <CardList 
