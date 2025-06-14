@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, RotateCcw, CheckCircle, XCircle, Settings } from "lucide-react";
+import { Calculator, RotateCcw, CheckCircle, XCircle, Settings, Target, Trophy } from "lucide-react";
 import { convertNumberToHiragana, generateRandomNumber } from "@/utils/numberConverter";
 
 const NumberExercise = () => {
@@ -151,19 +151,48 @@ const NumberExercise = () => {
   ];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <Card className="animate-fade-in">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calculator className="h-5 w-5" />
-            Ejercicio de números
-          </CardTitle>
-          <div className="flex items-center justify-between flex-wrap gap-2">
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      {/* Header with stats */}
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="p-3 bg-blue-100 rounded-full">
+            <Calculator className="h-8 w-8 text-blue-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Ejercicio de números</h1>
+        </div>
+        
+        {/* Score display */}
+        <div className="flex items-center justify-center gap-6">
+          <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full border border-green-200">
+            <Trophy className="h-5 w-5 text-green-600" />
+            <span className="font-semibold text-green-700">
+              {score.correct}/{score.total}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full border border-blue-200">
+            <Target className="h-5 w-5 text-blue-600" />
+            <span className="font-semibold text-blue-700">
+              {getScorePercentage()}% precisión
+            </span>
+          </div>
+          <Button variant="outline" size="sm" onClick={resetScore} className="rounded-full">
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reiniciar
+          </Button>
+        </div>
+      </div>
+
+      {/* Main exercise card */}
+      <Card className="animate-fade-in shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+        <CardHeader className="pb-4">
+          {/* Mode selector */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex gap-2">
               <Button
                 variant={mode === 'toJapanese' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setMode('toJapanese')}
+                className="min-w-[140px]"
               >
                 Número → japonés
               </Button>
@@ -171,26 +200,21 @@ const NumberExercise = () => {
                 variant={mode === 'toNumber' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setMode('toNumber')}
+                className="min-w-[140px]"
               >
                 Japonés → número
               </Button>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">
-                {score.correct}/{score.total} ({getScorePercentage()}%)
-              </Badge>
-              <Button variant="outline" size="sm" onClick={resetScore}>
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-            </div>
           </div>
           
-          {/* Selector de rango de números */}
-          <div className="flex items-center gap-2 pt-2">
-            <Settings className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Rango:</span>
+          {/* Range selector */}
+          <div className="flex items-center justify-center gap-3 pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2">
+              <Settings className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-600">Rango:</span>
+            </div>
             <Select value={maxNumber.toString()} onValueChange={(value) => setMaxNumber(parseInt(value))}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -203,85 +227,106 @@ const NumberExercise = () => {
             </Select>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+
+        <CardContent className="space-y-8">
+          {/* Question */}
           <div className="text-center">
-            <h3 className="text-xl font-semibold mb-4">{getQuestion()}</h3>
-            <div className="space-y-4">
+            <div className="inline-block p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-100 mb-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                {getQuestion()}
+              </h3>
+            </div>
+
+            {/* Answer input */}
+            <div className="max-w-md mx-auto space-y-6">
               <Input
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
                 placeholder={mode === 'toJapanese' ? 'Escribe en japonés...' : 'Escribe el número...'}
-                className="text-lg text-center"
+                className="text-lg text-center py-6 text-gray-700 border-2 border-gray-200 focus:border-blue-400 rounded-xl"
                 disabled={feedback.show && feedback.isCorrect}
               />
               
-              {feedback.show && (
-                <div className={`p-4 rounded-lg border ${
-                  feedback.isCorrect 
-                    ? 'bg-green-50 border-green-200' 
-                    : 'bg-red-50 border-red-200'
-                }`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    {feedback.isCorrect ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-600" />
-                    )}
-                    <span className={`font-semibold ${
-                      feedback.isCorrect ? 'text-green-800' : 'text-red-800'
-                    }`}>
-                      {feedback.isCorrect ? '¡Correcto!' : 'Incorrecto'}
-                    </span>
-                  </div>
-                  
-                  {!feedback.isCorrect && (
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-sm font-medium text-gray-600">Tu respuesta: </span>
-                        <div className="inline-flex">
-                          {feedback.comparison?.map((item, index) => (
-                            <span
-                              key={index}
-                              className={`px-1 ${
-                                item.isCorrect 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : item.char.startsWith('_') 
-                                    ? 'bg-yellow-100 text-yellow-800' 
-                                    : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {item.char.startsWith('_') ? item.char.slice(1, -1) : item.char}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-sm font-medium text-gray-600">Respuesta correcta: </span>
-                        <span className="text-lg font-semibold bg-gray-100 px-3 py-1 rounded-md border text-gray-900">
-                          {feedback.correctAnswer}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              <div className="flex gap-2 justify-center">
+              {/* Action buttons */}
+              <div className="flex gap-3 justify-center">
                 <Button 
                   onClick={checkAnswer} 
                   disabled={!userAnswer.trim() || (feedback.show && feedback.isCorrect)}
+                  size="lg"
+                  className="min-w-[120px] rounded-xl"
                 >
                   Comprobar
                 </Button>
                 {feedback.show && !feedback.isCorrect && (
-                  <Button variant="outline" onClick={generateNewQuestion}>
+                  <Button 
+                    variant="outline" 
+                    onClick={generateNewQuestion}
+                    size="lg"
+                    className="min-w-[120px] rounded-xl"
+                  >
                     Siguiente
                   </Button>
                 )}
               </div>
             </div>
           </div>
+
+          {/* Feedback */}
+          {feedback.show && (
+            <div className={`p-6 rounded-2xl border-2 animate-fade-in ${
+              feedback.isCorrect 
+                ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' 
+                : 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200'
+            }`}>
+              <div className="flex items-center gap-3 mb-4">
+                {feedback.isCorrect ? (
+                  <div className="p-2 bg-green-100 rounded-full">
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  </div>
+                ) : (
+                  <div className="p-2 bg-red-100 rounded-full">
+                    <XCircle className="h-6 w-6 text-red-600" />
+                  </div>
+                )}
+                <span className={`text-lg font-semibold ${
+                  feedback.isCorrect ? 'text-green-800' : 'text-red-800'
+                }`}>
+                  {feedback.isCorrect ? '¡Correcto! 🎉' : 'Incorrecto 😅'}
+                </span>
+              </div>
+              
+              {!feedback.isCorrect && (
+                <div className="space-y-4">
+                  <div className="bg-white p-4 rounded-xl border border-gray-100">
+                    <span className="text-sm font-medium text-gray-600 block mb-2">Tu respuesta:</span>
+                    <div className="inline-flex flex-wrap gap-1">
+                      {feedback.comparison?.map((item, index) => (
+                        <span
+                          key={index}
+                          className={`px-2 py-1 rounded-md text-sm font-medium ${
+                            item.isCorrect 
+                              ? 'bg-green-100 text-green-800 border border-green-200' 
+                              : item.char.startsWith('_') 
+                                ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' 
+                                : 'bg-red-100 text-red-800 border border-red-200'
+                          }`}
+                        >
+                          {item.char.startsWith('_') ? item.char.slice(1, -1) : item.char}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl border border-gray-100">
+                    <span className="text-sm font-medium text-gray-600 block mb-2">Respuesta correcta:</span>
+                    <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      {feedback.correctAnswer}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
