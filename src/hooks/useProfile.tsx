@@ -44,7 +44,21 @@ export const useProfile = () => {
           throw error;
         }
       } else {
-        setProfile(data);
+        // Parsear el display_name si es un JSON string
+        let displayName = data.display_name;
+        if (displayName && displayName.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(displayName);
+            displayName = parsed.display_name || displayName;
+          } catch (e) {
+            console.log('Display name no es JSON válido, usando como está');
+          }
+        }
+        
+        setProfile({
+          ...data,
+          display_name: displayName
+        });
       }
     } catch (error: any) {
       console.error('Error loading profile:', error);

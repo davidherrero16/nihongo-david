@@ -514,6 +514,14 @@ export const useSupabaseDecks = () => {
     try {
       console.log(`Iniciando importación de ${cards.length} tarjetas`);
       
+      // Verificar conectividad con Supabase antes de proceder
+      const { data: testConnection } = await supabase
+        .from('decks')
+        .select('count')
+        .limit(1);
+      
+      console.log('Conexión con Supabase verificada');
+      
       const { data: deckData, error: deckError } = await supabase
         .from('decks')
         .insert({
@@ -526,12 +534,12 @@ export const useSupabaseDecks = () => {
 
       if (deckError) {
         console.error('Error creando deck:', deckError);
-        throw deckError;
+        throw new Error(`Error al crear el mazo: ${deckError.message}`);
       }
 
       console.log('Deck creado:', deckData.id);
 
-      const batchSize = 50;
+      const batchSize = 25; // Reducir el tamaño del lote para mejor estabilidad
       const now = new Date();
       let totalInserted = 0;
 
@@ -554,21 +562,27 @@ export const useSupabaseDecks = () => {
 
         console.log(`Insertando lote ${Math.floor(i/batchSize) + 1} de ${Math.ceil(cards.length/batchSize)}: ${cardsToInsert.length} tarjetas`);
 
-        const { error: cardsError, data: insertedCards } = await supabase
-          .from('cards')
-          .insert(cardsToInsert)
-          .select();
+        try {
+          const { error: cardsError, data: insertedCards } = await supabase
+            .from('cards')
+            .insert(cardsToInsert)
+            .select();
 
-        if (cardsError) {
-          console.error('Error insertando tarjetas:', cardsError);
-          throw cardsError;
-        }
+          if (cardsError) {
+            console.error('Error insertando tarjetas:', cardsError);
+            throw new Error(`Error al insertar tarjetas: ${cardsError.message}`);
+          }
 
-        totalInserted += insertedCards?.length || 0;
-        console.log(`Lote insertado exitosamente. Total insertadas: ${totalInserted}`);
+          totalInserted += insertedCards?.length || 0;
+          console.log(`Lote insertado exitosamente. Total insertadas: ${totalInserted}`);
 
-        if (i + batchSize < cards.length) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          // Pausa más larga entre lotes para evitar problemas de red
+          if (i + batchSize < cards.length) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (batchError: any) {
+          console.error(`Error en lote ${Math.floor(i/batchSize) + 1}:`, batchError);
+          throw new Error(`Error al procesar lote de tarjetas: ${batchError.message}`);
         }
       }
 
@@ -585,9 +599,21 @@ export const useSupabaseDecks = () => {
       return deckData.id;
     } catch (error: any) {
       console.error('Error importing deck:', error);
+      
+      // Mensajes de error más específicos
+      let errorMessage = "Error desconocido durante la importación";
+      
+      if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+        errorMessage = "Error de conexión con el servidor. Verifica tu conexión a internet e inténtalo de nuevo.";
+      } else if (error.message.includes('timeout')) {
+        errorMessage = "La importación tardó demasiado. Intenta con un archivo más pequeño.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "Error",
-        description: `No se pudo importar el mazo: ${error.message}`,
+        title: "Error al importar",
+        description: errorMessage,
         variant: "destructive",
       });
       return '';
