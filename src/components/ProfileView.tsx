@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { User, Save, Settings, Mail, Calendar } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const ProfileView = () => {
   const { profile, updateProfile, loading } = useProfile();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [displayName, setDisplayName] = useState(profile?.display_name || "");
 
@@ -79,7 +81,7 @@ const ProfileView = () => {
                     <span className="text-sm font-medium text-gray-700">Correo electrónico</span>
                   </div>
                   <span className="text-gray-600">
-                    {profile?.email || "No disponible"}
+                    {user?.email || "No disponible"}
                   </span>
                 </div>
 
