@@ -30,14 +30,16 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
   const [showSummary, setShowSummary] = useState(false);
+  const [completedCards, setCompletedCards] = useState<Set<string>>(new Set());
   const [sessionCards, setSessionCards] = useState<CardType[]>(
     initialCards.map(card => ({ ...card, wasWrongInSession: false }))
   );
-  const [processedCards, setProcessedCards] = useState<Set<string>>(new Set());
 
   const currentCard = sessionCards[currentIndex];
   const totalCards = initialCards.length;
-  const progress = (processedCards.size / totalCards) * 100;
+  const progress = (completedCards.size / totalCards) * 100;
+
+  console.log(`Estado actual: ${completedCards.size}/${totalCards} completadas, ${sessionCards.length} en ronda actual`);
 
   const handleAnswer = (known: boolean) => {
     if (!currentCard) return;
@@ -57,21 +59,25 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     onUpdateCard(currentCard.id, known);
 
     if (known) {
-      // Si es correcta, marcar como procesada y remover de la sesión
-      setProcessedCards(prev => new Set([...prev, currentCard.id]));
+      // Si es correcta, marcar como completada
+      setCompletedCards(prev => new Set([...prev, currentCard.id]));
       
       // Remover la tarjeta actual de sessionCards
       const newSessionCards = sessionCards.filter((_, index) => index !== currentIndex);
       setSessionCards(newSessionCards);
       
-      console.log(`Tarjeta ${currentCard.word} completada. Quedan ${newSessionCards.length} tarjetas`);
+      console.log(`Tarjeta ${currentCard.word} completada. Completadas: ${completedCards.size + 1}/${totalCards}, quedan ${newSessionCards.length} en ronda`);
+      
+      // Si hemos completado todas las tarjetas originales, mostrar resumen
+      if (completedCards.size + 1 >= totalCards) {
+        console.log('Todas las tarjetas completadas, mostrando resumen');
+        setShowSummary(true);
+        return;
+      }
       
       // Ajustar índice si es necesario
       if (currentIndex >= newSessionCards.length && newSessionCards.length > 0) {
         setCurrentIndex(0);
-      } else if (newSessionCards.length === 0) {
-        console.log('Todas las tarjetas completadas, mostrando resumen');
-        setShowSummary(true);
       }
     } else {
       // Si es incorrecta, marcar como incorrecta en sesión y continuar
@@ -117,7 +123,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     setShowSummary(false);
     setCurrentIndex(0);
     setSessionResults([]);
-    setProcessedCards(new Set());
+    setCompletedCards(new Set());
     setSessionCards(initialCards.map(card => ({ ...card, wasWrongInSession: false })));
     onComplete();
   };
@@ -134,7 +140,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     setCurrentIndex(0);
     setSessionResults([]);
     setShowSummary(false);
-    setProcessedCards(new Set());
+    setCompletedCards(new Set());
   };
 
   if (showSummary) {
@@ -153,7 +159,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
           <CardContent className="space-y-6">
             <div className="text-center">
               <div className="text-4xl font-bold text-primary mb-2">
-                {processedCards.size}/{totalCards}
+                {completedCards.size}/{totalCards}
               </div>
               <p className="text-muted-foreground">Tarjetas dominadas en esta sesión</p>
             </div>
@@ -226,7 +232,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
       <div className="space-y-2">
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>Progreso de la sesión</span>
-          <span>{processedCards.size} / {totalCards} completadas</span>
+          <span>{completedCards.size} / {totalCards} completadas</span>
         </div>
         <Progress value={progress} className="h-2" />
         <div className="text-center text-sm text-muted-foreground">

@@ -642,7 +642,7 @@ export const useSupabaseDecks = () => {
 
     const nuevas = deck.cards.filter(card => card.reviewCount === 0).length;
     const revisar = deck.cards.filter(card => card.hasBeenWrong && card.difficulty < 7).length;
-    const aprendidas = deck.cards.filter(card => card.difficulty >= 7).length; // Cambio de 5 a 7 para el nuevo rango
+    const aprendidas = deck.cards.filter(card => card.difficulty >= 7).length;
     const porAprender = deck.cards.length - aprendidas;
 
     return { nuevas, revisar, aprendidas, porAprender };
