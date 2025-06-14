@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, RotateCcw, ArrowRight } from "lucide-react";
 import FlashCard from "@/components/FlashCard";
-import type { Card as CardType } from "@/hooks/useDecks";
+import type { Card as CardType } from "@/hooks/useSupabaseDecks";
 
 interface StudySessionProps {
   cards: CardType[];
@@ -24,8 +24,11 @@ interface SessionResult {
 }
 
 const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, deckId, onResetSessionMarks }: StudySessionProps) => {
-  // Tomar exactamente packSize tarjetas para la sesión
-  const initialCards = cards.slice(0, packSize);
+  // Filtrar tarjetas con IDs válidos y tomar exactamente packSize tarjetas
+  const validCards = cards.filter(card => !card.id.startsWith('temp_'));
+  const initialCards = validCards.slice(0, packSize);
+  
+  console.log(`Iniciando sesión con ${initialCards.length} tarjetas válidas de ${cards.length} disponibles`);
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
@@ -142,6 +145,16 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     setShowSummary(false);
     setCompletedCards(new Set());
   };
+
+  // Verificar si no hay tarjetas válidas para estudiar
+  if (initialCards.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-muted-foreground">No hay tarjetas válidas disponibles para estudiar</p>
+        <Button onClick={onComplete} className="mt-4">Volver</Button>
+      </div>
+    );
+  }
 
   if (showSummary) {
     const correctAnswers = sessionResults.filter(result => result.known).length;

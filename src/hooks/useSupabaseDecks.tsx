@@ -328,12 +328,28 @@ export const useSupabaseDecks = () => {
   const updateCardDifficulty = async (cardId: string, known: boolean, deckId: string) => {
     if (!user) return;
 
+    console.log(`Intentando actualizar tarjeta ${cardId} en deck ${deckId}`);
+
+    // Verificar que el cardId no sea temporal
+    if (cardId.startsWith('temp_')) {
+      console.error('Intento de actualizar tarjeta con ID temporal:', cardId);
+      toast({
+        title: "Error",
+        description: "Error interno: ID de tarjeta inválido",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const currentCard = decks
         .find(d => d.id === deckId)?.cards
         .find(c => c.id === cardId);
 
-      if (!currentCard) return;
+      if (!currentCard) {
+        console.error('Tarjeta no encontrada:', cardId);
+        return;
+      }
 
       let newDifficulty: number;
       
@@ -370,7 +386,12 @@ export const useSupabaseDecks = () => {
         .eq('id', cardId)
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating card in database:', error);
+        throw error;
+      }
+
+      console.log(`Tarjeta ${cardId} actualizada exitosamente en la base de datos`);
 
       // Actualizar estado local
       setDecks(prevDecks => 
@@ -553,28 +574,8 @@ export const useSupabaseDecks = () => {
 
       console.log(`Importación completada: ${totalInserted} tarjetas`);
 
-      // Actualizar estado local sin recargar todo
-      const newDeck: Deck = {
-        id: deckData.id,
-        name: deckData.name,
-        isImported: deckData.is_imported,
-        createdAt: new Date(deckData.created_at),
-        cards: cards.map((card, index) => ({
-          id: `temp_${index}`, // ID temporal, se actualizará en la próxima carga
-          word: card.word,
-          reading: card.reading,
-          meaning: card.meaning,
-          createdAt: now,
-          difficulty: 0,
-          lastReviewed: now,
-          nextReview: now,
-          reviewCount: 0,
-          hasBeenWrong: false,
-          wasWrongInSession: false
-        }))
-      };
-
-      setDecks(prevDecks => [...prevDecks, newDeck]);
+      // Recargar datos después de la importación para obtener IDs reales
+      await loadDecks();
       
       toast({
         title: "¡Deck importado!",
