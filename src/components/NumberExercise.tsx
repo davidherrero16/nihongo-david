@@ -1,16 +1,17 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, RotateCcw, CheckCircle, XCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calculator, RotateCcw, CheckCircle, XCircle, Settings } from "lucide-react";
 import { convertNumberToHiragana, generateRandomNumber } from "@/utils/numberConverter";
 
 const NumberExercise = () => {
   const [currentNumber, setCurrentNumber] = useState<number>(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [mode, setMode] = useState<'toJapanese' | 'toNumber'>('toJapanese');
+  const [maxNumber, setMaxNumber] = useState<number>(9999);
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [feedback, setFeedback] = useState<{
     show: boolean;
@@ -20,15 +21,20 @@ const NumberExercise = () => {
     comparison?: Array<{ char: string; isCorrect: boolean }>;
   }>({ show: false, isCorrect: false, correctAnswer: "", userAnswer: "" });
 
+  // Función para formatear números con separadores de miles
+  const formatNumberWithCommas = (num: number): string => {
+    return num.toLocaleString('es-ES');
+  };
+
   const generateNewQuestion = () => {
-    setCurrentNumber(generateRandomNumber());
+    setCurrentNumber(generateRandomNumber(1, maxNumber));
     setUserAnswer("");
     setFeedback({ show: false, isCorrect: false, correctAnswer: "", userAnswer: "" });
   };
 
   useEffect(() => {
     generateNewQuestion();
-  }, [mode]);
+  }, [mode, maxNumber]);
 
   const compareStrings = (userInput: string, correct: string) => {
     const comparison: Array<{ char: string; isCorrect: boolean }> = [];
@@ -122,7 +128,7 @@ const NumberExercise = () => {
 
   const getQuestion = () => {
     if (mode === 'toJapanese') {
-      return `¿Cómo se escribe ${currentNumber} en japonés?`;
+      return `¿Cómo se escribe ${formatNumberWithCommas(currentNumber)} en japonés?`;
     } else {
       return `¿Qué número representa ${convertNumberToHiragana(currentNumber)}?`;
     }
@@ -133,6 +139,15 @@ const NumberExercise = () => {
     return Math.round((score.correct / score.total) * 100);
   };
 
+  const numberRanges = [
+    { value: 100, label: "1-100" },
+    { value: 1000, label: "1-1,000" },
+    { value: 10000, label: "1-10,000" },
+    { value: 100000, label: "1-100,000" },
+    { value: 1000000, label: "1-1,000,000" },
+    { value: 9999999, label: "1-9,999,999" }
+  ];
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <Card className="animate-fade-in">
@@ -141,7 +156,7 @@ const NumberExercise = () => {
             <Calculator className="h-5 w-5" />
             Ejercicio de Números
           </CardTitle>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex gap-2">
               <Button
                 variant={mode === 'toJapanese' ? 'default' : 'outline'}
@@ -166,6 +181,24 @@ const NumberExercise = () => {
                 <RotateCcw className="h-4 w-4" />
               </Button>
             </div>
+          </div>
+          
+          {/* Selector de rango de números */}
+          <div className="flex items-center gap-2 pt-2">
+            <Settings className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Rango:</span>
+            <Select value={maxNumber.toString()} onValueChange={(value) => setMaxNumber(parseInt(value))}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {numberRanges.map((range) => (
+                  <SelectItem key={range.value} value={range.value.toString()}>
+                    {range.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
