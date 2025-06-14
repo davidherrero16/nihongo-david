@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSupabaseDecks } from "@/hooks/useSupabaseDecks";
@@ -12,6 +11,8 @@ import CardListView from "@/components/CardListView";
 import StudySession from "@/components/StudySession";
 import NumberExercise from "@/components/NumberExercise";
 import KanaExercise from "@/components/KanaExercise";
+import InactivityWarning from "@/components/InactivityWarning";
+import { useInactivityManager } from "@/hooks/useInactivityManager";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -35,6 +36,8 @@ const Index = () => {
   const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'import' | 'kana' | 'session'>('study');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [currentDeckId, setCurrentDeckId] = useState<string>('');
+
+  const { showWarning, warningTimeLeft, handleExtendSession, handleLogout } = useInactivityManager();
 
   // Establecer el primer deck como actual cuando se carguen
   useEffect(() => {
@@ -188,6 +191,14 @@ const Index = () => {
           />
         )}
       </main>
+
+      {showWarning && (
+        <InactivityWarning
+          onExtendSession={handleExtendSession}
+          onLogout={handleLogout}
+          remainingTime={warningTimeLeft}
+        />
+      )}
     </div>
   );
 };
