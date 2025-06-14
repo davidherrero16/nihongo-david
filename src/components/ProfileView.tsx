@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ const ProfileView = () => {
 
   const handleSave = async () => {
     try {
-      await updateProfile({ display_name: displayName });
+      await updateProfile(displayName);
       toast({
         title: "Perfil actualizado",
         description: "Tu nombre se ha actualizado correctamente",
