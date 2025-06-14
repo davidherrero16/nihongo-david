@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -146,8 +147,7 @@ const NumberExercise = () => {
     { value: 100000, label: "1-100,000" },
     { value: 1000000, label: "1-1,000,000" },
     { value: 10000000, label: "1-10,000,000" },
-    { value: 50000000, label: "1-50,000,000" },
-    { value: 99999999, label: "1-99,999,999" }
+    { value: 999999999, label: "1-999,999,999" }
   ];
 
   return (
@@ -156,7 +156,7 @@ const NumberExercise = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Ejercicio de Números
+            Ejercicio de números
           </CardTitle>
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex gap-2">
@@ -165,14 +165,14 @@ const NumberExercise = () => {
                 size="sm"
                 onClick={() => setMode('toJapanese')}
               >
-                Número → Japonés
+                Número → japonés
               </Button>
               <Button
                 variant={mode === 'toNumber' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setMode('toNumber')}
               >
-                Japonés → Número
+                Japonés → número
               </Button>
             </div>
             <div className="flex items-center gap-2">

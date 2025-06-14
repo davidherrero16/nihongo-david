@@ -1,5 +1,5 @@
 
-import { Book, Plus, List, Calculator, Upload, Users, LogOut } from "lucide-react";
+import { Book, Plus, List, Calculator, Users, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -22,7 +22,6 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
     { view: 'list' as const, icon: List, label: 'Lista' },
     { view: 'numbers' as const, icon: Calculator, label: 'Números' },
     { view: 'kana' as const, icon: Book, label: 'Kana' },
-    { view: 'import' as const, icon: Upload, label: 'Importar' },
   ];
 
   return (
@@ -89,7 +88,7 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
                   className="flex items-center gap-2"
                 >
                   <Users className="h-4 w-4" />
-                  Mi Perfil
+                  Mi perfil
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -97,7 +96,7 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
                   className="flex items-center gap-2 text-red-600"
                 >
                   <LogOut className="h-4 w-4" />
-                  Cerrar Sesión
+                  Cerrar sesión
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

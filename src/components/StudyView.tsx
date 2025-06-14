@@ -74,19 +74,23 @@ const StudyView = ({
 
   return (
     <div className="max-w-2xl mx-auto px-2">
-      {/* Selector de deck con botón de importar */}
-      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
-        <div className="flex-1 w-full">
-          <DeckSelector
-            decks={decksWithCards}
-            currentDeckId={currentDeckId}
-            onSelectDeck={(deckId) => {
-              onSelectDeck(deckId);
-            }}
-            onCreateDeck={onCreateDeck}
-          />
+      {/* Selector de deck con botón de importar - mejorada alineación */}
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center">
+          <div className="flex-1">
+            <DeckSelector
+              decks={decksWithCards}
+              currentDeckId={currentDeckId}
+              onSelectDeck={(deckId) => {
+                onSelectDeck(deckId);
+              }}
+              onCreateDeck={onCreateDeck}
+            />
+          </div>
+          <div className="flex justify-center sm:justify-end">
+            <ImportPopup onImport={onImport} />
+          </div>
         </div>
-        <ImportPopup onImport={onImport} />
       </div>
 
       {/* Estadísticas del deck */}
