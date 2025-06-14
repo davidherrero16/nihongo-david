@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileText, Download, ClipboardPaste } from "lucide-react";
+import { Upload, FileText, Download, ClipboardPaste, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -17,6 +17,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [pasteText, setPasteText] = useState("");
   const [importMode, setImportMode] = useState<'file' | 'paste'>('file');
+  const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +46,6 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
     const lines = content.split('\n').filter(line => line.trim());
     if (lines.length < 2) return [];
     
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
     const cards = [];
     
     for (let i = 1; i < lines.length; i++) {
@@ -69,12 +69,11 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
     for (const line of lines) {
       const fields = line.split('\t');
       if (fields.length >= 3) {
-        // Limpiar HTML y tags de los campos
         const cleanField = (field: string) => {
           return field
-            .replace(/<[^>]*>/g, '') // Remover HTML tags
-            .replace(/\[sound:[^\]]*\]/g, '') // Remover archivos de sonido
-            .replace(/\[[^\]]*\]/g, '') // Remover otros brackets
+            .replace(/<[^>]*>/g, '')
+            .replace(/\[sound:[^\]]*\]/g, '')
+            .replace(/\[[^\]]*\]/g, '')
             .trim();
         };
 
@@ -100,7 +99,6 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
     const cards = [];
     
     for (const line of lines) {
-      // Split by ' - ' (space-dash-space)
       const parts = line.split(' - ');
       if (parts.length >= 3) {
         const word = parts[0].trim();
@@ -148,6 +146,8 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
       return;
     }
 
+    setIsImporting(true);
+
     try {
       let content = '';
       
@@ -160,15 +160,12 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
       let cards: any[] = [];
       
       if (importMode === 'paste') {
-        // Try dash format first
         cards = parseDashFormat(content);
         
-        // If that didn't work, try tab-separated (Anki format)
         if (cards.length === 0 && content.includes('\t')) {
           cards = parseAnkiTxt(content);
         }
         
-        // If still nothing, try CSV
         if (cards.length === 0) {
           cards = parseCSV(content);
         }
@@ -176,11 +173,9 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
         if (file.name.endsWith('.csv')) {
           cards = parseCSV(content);
         } else if (file.name.endsWith('.txt')) {
-          // Detectar si es formato Anki (separado por tabs) o CSV
           if (content.includes('\t')) {
             cards = parseAnkiTxt(content);
           } else {
-            // Tratar como CSV con diferentes separadores
             cards = parseCSV(content.replace(/\t/g, ','));
           }
         } else if (file.name.endsWith('.json')) {
@@ -203,25 +198,44 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
         });
         return;
       }
+
+      // Filtrar tarjetas válidas (que tengan todos los campos)
+      const validCards = cards.filter(card => 
+        card.word && card.word.trim() && 
+        card.reading && card.reading.trim() && 
+        card.meaning && card.meaning.trim()
+      );
+
+      if (validCards.length === 0) {
+        toast({
+          title: "Error al importar",
+          description: "No se encontraron tarjetas válidas con todos los campos completos",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log(`Importando ${validCards.length} tarjetas válidas de ${cards.length} tarjetas procesadas`);
       
-      onImport(deckName.trim(), cards);
-      toast({
-        title: "¡Deck importado!",
-        description: `Se importaron ${cards.length} tarjetas correctamente`,
-      });
+      await onImport(deckName.trim(), validCards);
       
+      // Limpiar formulario solo después de éxito
       setDeckName("");
       setFile(null);
       setPasteText("");
       if (document.querySelector('input[type="file"]')) {
         (document.querySelector('input[type="file"]') as HTMLInputElement).value = '';
       }
+      
     } catch (error) {
+      console.error('Error durante la importación:', error);
       toast({
         title: "Error al procesar contenido",
         description: "Verifica que el formato sea correcto",
         variant: "destructive"
       });
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -276,6 +290,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
             value={deckName}
             onChange={(e) => setDeckName(e.target.value)}
             placeholder="Ej: Vocabulario N5"
+            disabled={isImporting}
           />
         </div>
 
@@ -284,6 +299,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
             variant={importMode === 'file' ? 'default' : 'outline'}
             onClick={() => setImportMode('file')}
             size="sm"
+            disabled={isImporting}
           >
             <Upload className="h-4 w-4 mr-2" />
             Archivo
@@ -292,6 +308,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
             variant={importMode === 'paste' ? 'default' : 'outline'}
             onClick={() => setImportMode('paste')}
             size="sm"
+            disabled={isImporting}
           >
             <ClipboardPaste className="h-4 w-4 mr-2" />
             Copiar/Pegar
@@ -307,6 +324,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
                 type="file"
                 accept=".csv,.json,.txt"
                 onChange={handleFileChange}
+                disabled={isImporting}
               />
             </div>
             
@@ -326,17 +344,31 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
               onChange={(e) => setPasteText(e.target.value)}
               placeholder="こんにちは - konnichiwa - hola&#10;ありがとう - arigatou - gracias"
               rows={6}
+              disabled={isImporting}
             />
           </div>
         )}
         
-        <Button onClick={handleImport} className="w-full">
-          {importMode === 'file' ? (
-            <Upload className="h-4 w-4 mr-2" />
+        <Button 
+          onClick={handleImport} 
+          className="w-full"
+          disabled={isImporting}
+        >
+          {isImporting ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Importando...
+            </>
           ) : (
-            <ClipboardPaste className="h-4 w-4 mr-2" />
+            <>
+              {importMode === 'file' ? (
+                <Upload className="h-4 w-4 mr-2" />
+              ) : (
+                <ClipboardPaste className="h-4 w-4 mr-2" />
+              )}
+              Importar Deck
+            </>
           )}
-          Importar Deck
         </Button>
         
         <div className="border-t pt-4">
@@ -346,6 +378,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
               variant="outline" 
               size="sm" 
               onClick={() => downloadTemplate('csv')}
+              disabled={isImporting}
             >
               <Download className="h-4 w-4 mr-1" />
               CSV
@@ -354,6 +387,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
               variant="outline" 
               size="sm" 
               onClick={() => downloadTemplate('anki')}
+              disabled={isImporting}
             >
               <Download className="h-4 w-4 mr-1" />
               Anki TXT
@@ -362,6 +396,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
               variant="outline" 
               size="sm" 
               onClick={() => downloadTemplate('dash')}
+              disabled={isImporting}
             >
               <Download className="h-4 w-4 mr-1" />
               Dash Format
@@ -370,6 +405,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
               variant="outline" 
               size="sm" 
               onClick={() => downloadTemplate('json')}
+              disabled={isImporting}
             >
               <Download className="h-4 w-4 mr-1" />
               JSON

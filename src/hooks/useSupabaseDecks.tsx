@@ -126,7 +126,7 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks(); // Recargar datos
+      await loadDecks();
       
       toast({
         title: "Tarjeta añadida",
@@ -158,7 +158,7 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks(); // Recargar datos
+      await loadDecks();
       
       toast({
         title: "Mazo creado",
@@ -191,8 +191,6 @@ export const useSupabaseDecks = () => {
     console.log(`Starting deletion process for card ${cardId} from deck ${deckId} for user ${user.id}`);
 
     try {
-      // First verify the card exists and belongs to the user
-      console.log('Verifying card ownership...');
       const { data: existingCard, error: fetchError } = await supabase
         .from('cards')
         .select('id, user_id, deck_id')
@@ -211,9 +209,6 @@ export const useSupabaseDecks = () => {
         throw new Error('La tarjeta no existe o no tienes permisos para eliminarla');
       }
 
-      console.log('Card verified successfully, proceeding with deletion...');
-
-      // Delete the card
       const { error: deleteError } = await supabase
         .from('cards')
         .delete()
@@ -228,7 +223,6 @@ export const useSupabaseDecks = () => {
 
       console.log(`Card ${cardId} deleted successfully`);
       
-      // Reload data to reflect changes
       await loadDecks();
       
       toast({
@@ -242,7 +236,6 @@ export const useSupabaseDecks = () => {
         description: error.message || 'No se pudo eliminar la tarjeta',
         variant: "destructive",
       });
-      // Re-throw the error so the calling component can handle it
       throw error;
     }
   };
@@ -251,7 +244,6 @@ export const useSupabaseDecks = () => {
     if (!user) return;
 
     try {
-      // Encontrar la tarjeta actual
       const currentCard = decks
         .find(d => d.id === deckId)?.cards
         .find(c => c.id === cardId);
@@ -290,7 +282,7 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks(); // Recargar datos
+      await loadDecks();
     } catch (error: any) {
       console.error('Error updating card:', error);
       toast({
@@ -313,7 +305,7 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks(); // Recargar datos
+      await loadDecks();
     } catch (error: any) {
       console.error('Error resetting session marks:', error);
     }
@@ -339,7 +331,7 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks(); // Recargar datos
+      await loadDecks();
       
       toast({
         title: "Progreso reiniciado",
@@ -379,8 +371,8 @@ export const useSupabaseDecks = () => {
 
       console.log('Deck creado:', deckData.id);
 
-      // Dividir las tarjetas en lotes más pequeños para evitar timeouts
-      const batchSize = 100;
+      // Procesar tarjetas en lotes más pequeños para mejor rendimiento
+      const batchSize = 50; // Reducido para mejor estabilidad
       const now = new Date();
       let totalInserted = 0;
 
@@ -415,15 +407,21 @@ export const useSupabaseDecks = () => {
 
         totalInserted += insertedCards?.length || 0;
         console.log(`Lote insertado exitosamente. Total insertadas: ${totalInserted}`);
+
+        // Pequeña pausa entre lotes para evitar sobrecargar la base de datos
+        if (i + batchSize < cards.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
 
       console.log(`Importación completada: ${totalInserted} tarjetas`);
 
-      await loadDecks(); // Recargar datos
+      // Recargar datos después de la importación
+      await loadDecks();
       
       toast({
-        title: "Mazo importado",
-        description: `Se importó "${name}" con ${totalInserted} tarjetas`,
+        title: "¡Deck importado!",
+        description: `Se importó "${name}" con ${totalInserted} tarjetas correctamente`,
       });
 
       return deckData.id;
@@ -450,7 +448,7 @@ export const useSupabaseDecks = () => {
 
       if (error) throw error;
 
-      await loadDecks(); // Recargar datos
+      await loadDecks();
       
       toast({
         title: "Mazo eliminado",
