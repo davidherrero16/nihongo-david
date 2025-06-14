@@ -45,12 +45,15 @@ const StudyView = ({
   const [studyMode, setStudyMode] = useState<'easy' | 'hard'>('easy');
   const [packSize, setPackSize] = useState<10 | 15>(10);
 
+  // Filtrar decks que tienen tarjetas para mostrar en el selector
+  const decksWithCards = decks.filter(deck => deck.cards.length > 0);
+
   if (!currentDeck || currentDeck.cards.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-2">
         <div className="mb-4 sm:mb-6">
           <DeckSelector
-            decks={decks}
+            decks={decksWithCards}
             currentDeckId={currentDeckId}
             onSelectDeck={(deckId) => {
               onSelectDeck(deckId);
@@ -68,7 +71,7 @@ const StudyView = ({
       {/* Selector de deck */}
       <div className="mb-4 sm:mb-6">
         <DeckSelector
-          decks={decks}
+          decks={decksWithCards}
           currentDeckId={currentDeckId}
           onSelectDeck={(deckId) => {
             onSelectDeck(deckId);

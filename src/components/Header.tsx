@@ -29,9 +29,12 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
     <header className="bg-white border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-2 sm:px-4 py-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 truncate">
+          <button
+            onClick={() => onViewChange('study')}
+            className="text-xl sm:text-2xl font-bold text-gray-800 truncate hover:text-blue-600 transition-colors cursor-pointer"
+          >
             日本語学習 (Nihongo Gakushū)
-          </h1>
+          </button>
           
           <div className="flex items-center gap-2">
             {/* Navigation buttons for larger screens */}
