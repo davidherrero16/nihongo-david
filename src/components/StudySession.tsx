@@ -148,12 +148,21 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     setCompletedCards(new Set());
   };
 
+  // Create wrapper functions for button clicks
+  const handleFinishButtonClick = () => {
+    handleFinishSession();
+  };
+
+  const handleBackToStudyClick = () => {
+    onComplete({ correct: 0, total: 0 });
+  };
+
   // Verificar si no hay tarjetas válidas para estudiar
   if (initialCards.length === 0) {
     return (
       <div className="text-center py-16">
         <p className="text-muted-foreground">No hay tarjetas válidas disponibles para estudiar</p>
-        <Button onClick={onComplete} className="mt-4">Volver</Button>
+        <Button onClick={handleBackToStudyClick} className="mt-4">Volver</Button>
       </div>
     );
   }
@@ -219,7 +228,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
                 </Button>
               )}
               <Button 
-                onClick={handleFinishSession}
+                onClick={handleFinishButtonClick}
                 className="flex items-center gap-2"
               >
                 <ArrowRight className="h-4 w-4" />
@@ -236,7 +245,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     return (
       <div className="text-center py-16">
         <p className="text-muted-foreground">No hay tarjetas disponibles para estudiar</p>
-        <Button onClick={onComplete} className="mt-4">Volver</Button>
+        <Button onClick={handleBackToStudyClick} className="mt-4">Volver</Button>
       </div>
     );
   }
