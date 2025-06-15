@@ -22,20 +22,20 @@ const WelcomeMessage = () => {
   };
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200 mb-6">
-      <CardContent className="p-4 sm:p-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-blue-600" />
-            <Sparkles className="h-4 w-4 text-yellow-500" />
+    <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200 mb-4 sm:mb-6">
+      <CardContent className="p-3 sm:p-4 lg:p-6">
+        <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
           </div>
-          <div>
-            <h2 className="text-lg sm:text-xl font-semibold text-blue-900">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-blue-900 leading-tight">
               {getGreetingWithName()}
             </h2>
           </div>
         </div>
-        <p className="text-xs sm:text-sm text-blue-600">
+        <p className="text-xs sm:text-sm text-blue-600 leading-relaxed">
           ¡Vamos a aprender juntos! がんばって！(¡Esfuérzate!)
         </p>
       </CardContent>

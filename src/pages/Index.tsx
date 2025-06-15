@@ -162,14 +162,14 @@ const Index = () => {
   const deckStats = getDeckStats(currentDeckId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <Header 
         currentView={currentView}
         onViewChange={setCurrentView}
         onSignOut={handleSignOut}
       />
 
-      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full">
+      <main className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 lg:py-8 max-w-full">
         {currentView === 'study' && (
           <>
             <WelcomeMessage />
