@@ -107,7 +107,8 @@ export function useFSRS(cards: Card[], userId: string) {
   const processAnswer = useCallback(async (
     card: Card, 
     known: boolean,
-    responseTime?: number
+    responseTime?: number,
+    onLocalUpdate?: (cardId: string, known: boolean) => void
   ): Promise<{
     updatedCard: Card;
     fsrsData: FSRSData;
@@ -127,9 +128,10 @@ export function useFSRS(cards: Card[], userId: string) {
       ...card,
       difficulty: fsrsResult.newDifficulty,
       reviewCount: card.reviewCount + 1,
-      lastReviewed: reviewTime.toISOString(),
-      nextReview: fsrsResult.nextReviewDate.toISOString(),
+      lastReviewed: reviewTime,
+      nextReview: fsrsResult.nextReviewDate,
       hasBeenWrong: !known || card.hasBeenWrong,
+      wasWrongInSession: !known,
       
       // Campos FSRS específicos
       easeFactor: fsrsResult.fsrsData.stability,
@@ -176,8 +178,15 @@ export function useFSRS(cards: Card[], userId: string) {
         intervalModifier: 1,
         responseTime: actualResponseTime
       });
+
+      // Actualizar estado local si se proporciona el callback
+      if (onLocalUpdate) {
+        onLocalUpdate(card.id, known);
+      }
+
     } catch (error) {
       console.error('Error actualizando tarjeta con FSRS:', error);
+      throw error; // Re-throw para que StudySession pueda manejar el error
     }
 
     return {

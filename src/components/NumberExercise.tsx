@@ -176,7 +176,7 @@ const NumberExercise = () => {
             </span>
           </div>
           <Button variant="outline" size="sm" onClick={resetScore} className="rounded-full">
-            <RotateCcw className="h-4 w-4 mr-2" />
+            <RotateCcw className="h-5 w-5 mr-2" />
             Reiniciar
           </Button>
         </div>

@@ -79,7 +79,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
 
     try {
       // Procesar respuesta con FSRS
-      const fsrsResult = await processAnswer(currentCard, known);
+      const fsrsResult = await processAnswer(currentCard, known, undefined, onUpdateCard);
 
       console.log(`FSRS: Tarjeta procesada exitosamente. Próximo intervalo: ${fsrsResult.interval} días`);
       
@@ -92,9 +92,6 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
 
       setSessionResults(prev => [...prev, result]);
       
-      // Actualizar la tarjeta en el estado local también (para compatibilidad)
-      onUpdateCard(currentCard.id, known);
-
       if (known) {
         // Si es correcta, marcar como completada
         const newCompletedCards = new Set([...completedCards, currentCard.id]);
@@ -136,9 +133,44 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
       }
 
     } catch (error) {
-      console.error('FSRS: Error inesperado procesando respuesta:', error);
-      // Fallback al método original si falla FSRS
-      onUpdateCard(currentCard.id, known);
+      console.error('FSRS: Error procesando respuesta:', error);
+      
+      // En caso de error con FSRS, usar fallback pero sin duplicar actualizaciones
+      try {
+        console.log('FSRS: Usando sistema de fallback para actualizar tarjeta');
+        onUpdateCard(currentCard.id, known);
+        
+        // Manejar lógica de sesión localmente
+        if (known) {
+          const newCompletedCards = new Set([...completedCards, currentCard.id]);
+          setCompletedCards(newCompletedCards);
+          
+          if (newCompletedCards.size >= totalCards) {
+            setShowSummary(true);
+            return;
+          }
+          
+          const newRemainingCards = sessionCards.filter(card => !newCompletedCards.has(card.id));
+          if (newRemainingCards.length === 0) {
+            setShowSummary(true);
+            return;
+          }
+          
+          setCurrentIndex(prev => prev % newRemainingCards.length);
+        } else {
+          setSessionCards(prev => prev.map(card => 
+            card.id === currentCard.id
+              ? { ...card, wasWrongInSession: true }
+              : card
+          ));
+          
+          if (remainingCards.length > 1) {
+            setCurrentIndex(prev => (prev + 1) % remainingCards.length);
+          }
+        }
+      } catch (fallbackError) {
+        console.error('Error en sistema de fallback:', fallbackError);
+      }
     }
     
     // Reiniciar tiempo de respuesta para la siguiente tarjeta
