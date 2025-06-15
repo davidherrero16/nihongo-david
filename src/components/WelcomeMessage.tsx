@@ -22,7 +22,7 @@ const WelcomeMessage = () => {
   };
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200 mb-4 sm:mb-6">
+    <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200 mb-4 sm:mb-6 w-1/2 mx-auto">
       <CardContent className="p-3 sm:p-4 lg:p-6">
         <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-2">
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
@@ -30,12 +30,12 @@ const WelcomeMessage = () => {
             <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-blue-900 leading-tight">
+            <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-blue-900 leading-tight text-center">
               {getGreetingWithName()}
             </h2>
           </div>
         </div>
-        <p className="text-xs sm:text-sm text-blue-600 leading-relaxed">
+        <p className="text-xs sm:text-sm text-blue-600 leading-relaxed text-center">
           ¡Vamos a aprender juntos! がんばって！(¡Esfuérzate!)
         </p>
       </CardContent>

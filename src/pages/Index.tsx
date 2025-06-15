@@ -41,6 +41,7 @@ const Index = () => {
   const [currentDeckId, setCurrentDeckId] = useState<string>('');
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [sessionStats, setSessionStats] = useState({ correct: 0, total: 0 });
+  const [packSize, setPackSize] = useState<number>(10);
 
   // Establecer el primer deck como actual cuando se carguen
   useEffect(() => {
@@ -189,6 +190,8 @@ const Index = () => {
               currentCards={currentCards}
               currentCardIndex={currentCardIndex}
               onImport={handleImport}
+              packSize={packSize}
+              onPackSizeChange={setPackSize}
             />
           </>
         )}
@@ -196,7 +199,7 @@ const Index = () => {
         {currentView === 'session' && (
           <StudySession
             cards={currentCards}
-            packSize={10}
+            packSize={packSize}
             onComplete={handleCompleteSession}
             onUpdateCard={(cardId, known) => {
               updateCardDifficulty(cardId, known, currentDeckId);

@@ -1,25 +1,60 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/types/deck";
 
 export const cardService = {
   async loadAllCards(userId: string) {
     console.log('Iniciando consulta de tarjetas...');
-    const { data: allCards, error: cardsError, count } = await supabase
+    
+    let allCards: any[] = [];
+    let hasMore = true;
+    let from = 0;
+    const pageSize = 1000; // Tamaño de página para evitar el límite por defecto
+    
+    // Obtener el conteo total primero
+    const { count: totalCount, error: countError } = await supabase
       .from('cards')
-      .select('*', { count: 'exact' })
-      .eq('user_id', userId)
-      .order('created_at', { ascending: true });
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    
+    if (countError) {
+      console.error('Error obteniendo conteo de tarjetas:', countError);
+      throw countError;
+    }
+    
+    console.log(`Total de tarjetas en la BD: ${totalCount}`);
+    
+    // Cargar todas las tarjetas usando paginación
+    while (hasMore) {
+      const { data: pageCards, error: cardsError } = await supabase
+        .from('cards')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true })
+        .range(from, from + pageSize - 1);
 
-    if (cardsError) {
-      console.error('Error cargando tarjetas:', cardsError);
-      throw cardsError;
+      if (cardsError) {
+        console.error('Error cargando tarjetas:', cardsError);
+        throw cardsError;
+      }
+
+      if (pageCards && pageCards.length > 0) {
+        allCards = [...allCards, ...pageCards];
+        from += pageSize;
+        console.log(`Cargadas ${allCards.length} tarjetas de ${totalCount}`);
+      } else {
+        hasMore = false;
+      }
+      
+      // Si ya cargamos todas las tarjetas, salir del bucle
+      if (allCards.length >= totalCount) {
+        hasMore = false;
+      }
     }
 
-    console.log(`Total de tarjetas en la consulta: ${allCards?.length || 0}`);
-    console.log(`Conteo exacto de tarjetas en la BD: ${count}`);
+    console.log(`Total de tarjetas cargadas: ${allCards.length}`);
+    console.log(`Conteo exacto de tarjetas en la BD: ${totalCount}`);
 
-    return { cards: allCards || [], count };
+    return { cards: allCards, count: totalCount };
   },
 
   async addCard(deckId: string, userId: string, word: string, reading: string, meaning: string) {
@@ -37,7 +72,13 @@ export const cardService = {
         next_review: now.toISOString(),
         review_count: 0,
         has_been_wrong: false,
-        was_wrong_in_session: false
+        was_wrong_in_session: false,
+        // Valores SRS iniciales
+        ease_factor: 2.5,
+        srs_interval: 1,
+        repetitions: 0,
+        last_score: 0,
+        interval_modifier: 1.0
       })
       .select()
       .single();
@@ -84,17 +125,34 @@ export const cardService = {
     reviewCount: number;
     hasBeenWrong: boolean;
     wasWrongInSession: boolean;
+    // Campos SRS opcionales
+    easeFactor?: number;
+    srsInterval?: number;
+    repetitions?: number;
+    lastScore?: number;
+    intervalModifier?: number;
+    responseTime?: number;
   }) {
+    const updateData: any = {
+      difficulty,
+      last_reviewed: reviewData.lastReviewed.toISOString(),
+      next_review: reviewData.nextReview.toISOString(),
+      review_count: reviewData.reviewCount,
+      has_been_wrong: reviewData.hasBeenWrong,
+      was_wrong_in_session: reviewData.wasWrongInSession
+    };
+
+    // Agregar campos SRS si están presentes
+    if (reviewData.easeFactor !== undefined) updateData.ease_factor = reviewData.easeFactor;
+    if (reviewData.srsInterval !== undefined) updateData.srs_interval = reviewData.srsInterval;
+    if (reviewData.repetitions !== undefined) updateData.repetitions = reviewData.repetitions;
+    if (reviewData.lastScore !== undefined) updateData.last_score = reviewData.lastScore;
+    if (reviewData.intervalModifier !== undefined) updateData.interval_modifier = reviewData.intervalModifier;
+    if (reviewData.responseTime !== undefined) updateData.response_time = reviewData.responseTime;
+
     const { error } = await supabase
       .from('cards')
-      .update({
-        difficulty,
-        last_reviewed: reviewData.lastReviewed.toISOString(),
-        next_review: reviewData.nextReview.toISOString(),
-        review_count: reviewData.reviewCount,
-        has_been_wrong: reviewData.hasBeenWrong,
-        was_wrong_in_session: reviewData.wasWrongInSession
-      })
+      .update(updateData)
       .eq('id', cardId)
       .eq('user_id', userId);
 
@@ -124,7 +182,13 @@ export const cardService = {
         next_review: now.toISOString(),
         review_count: 0,
         has_been_wrong: false,
-        was_wrong_in_session: false
+        was_wrong_in_session: false,
+        // Reset valores SRS
+        ease_factor: 2.5,
+        srs_interval: 1,
+        repetitions: 0,
+        last_score: 0,
+        interval_modifier: 1.0
       })
       .eq('deck_id', deckId)
       .eq('user_id', userId);
@@ -155,7 +219,13 @@ export const cardService = {
         next_review: now.toISOString(),
         review_count: 0,
         has_been_wrong: false,
-        was_wrong_in_session: false
+        was_wrong_in_session: false,
+        // Valores SRS iniciales
+        ease_factor: 2.5,
+        srs_interval: 1,
+        repetitions: 0,
+        last_score: 0,
+        interval_modifier: 1.0
       }));
 
       console.log(`Insertando lote ${Math.floor(i/batchSize) + 1} de ${Math.ceil(cards.length/batchSize)}: ${cardsToInsert.length} tarjetas`);

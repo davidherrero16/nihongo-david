@@ -1,20 +1,16 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Check, X, Volume2 } from "lucide-react";
+import { Check, X, Volume2 } from "lucide-react";
 import type { Card as CardType } from "@/hooks/useCards";
 import { useSpeech } from "@/hooks/useSpeech";
 
 interface FlashCardProps {
   card: CardType;
   onAnswer: (known: boolean) => void;
-  onNext?: () => void;
-  onPrevious?: () => void;
-  showNavigation?: boolean;
 }
 
-const FlashCard = ({ card, onAnswer, onNext, onPrevious, showNavigation = true }: FlashCardProps) => {
+const FlashCard = ({ card, onAnswer }: FlashCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const { speak, isSpeaking } = useSpeech();
 
@@ -29,23 +25,11 @@ const FlashCard = ({ card, onAnswer, onNext, onPrevious, showNavigation = true }
   const handleKnown = () => {
     onAnswer(true);
     setIsFlipped(false);
-    onNext?.();
   };
 
   const handleUnknown = () => {
     onAnswer(false);
     setIsFlipped(false);
-    onNext?.();
-  };
-
-  const handleNext = () => {
-    setIsFlipped(false);
-    onNext?.();
-  };
-
-  const handlePrevious = () => {
-    setIsFlipped(false);
-    onPrevious?.();
   };
 
   return (
@@ -126,43 +110,21 @@ const FlashCard = ({ card, onAnswer, onNext, onPrevious, showNavigation = true }
           </div>
         )}
 
-        {showNavigation && (
-          <div className="flex justify-between items-center">
-            <Button 
-              variant="outline" 
-              onClick={handlePrevious}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Anterior
-            </Button>
-            
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleSpeak}
-                variant="secondary"
-                size="sm"
-                disabled={isSpeaking}
-                className="flex items-center gap-2"
-              >
-                <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
-                Pronunciar
-              </Button>
-              <Button onClick={handleFlip} variant="secondary">
-                {isFlipped ? 'Ver Palabra' : 'Ver Significado'}
-              </Button>
-            </div>
-            
-            <Button 
-              variant="outline" 
-              onClick={handleNext}
-              className="flex items-center gap-2"
-            >
-              Siguiente
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        <div className="flex justify-center gap-2">
+          <Button 
+            onClick={handleSpeak}
+            variant="secondary"
+            size="sm"
+            disabled={isSpeaking}
+            className="flex items-center gap-2"
+          >
+            <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
+            Pronunciar
+          </Button>
+          <Button onClick={handleFlip} variant="secondary">
+            {isFlipped ? 'Ver palabra' : 'Ver significado'}
+          </Button>
+        </div>
       </div>
     </div>
   );
