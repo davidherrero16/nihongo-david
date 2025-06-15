@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +9,7 @@ import type { Card as CardType } from "@/hooks/useSupabaseDecks";
 interface StudySessionProps {
   cards: CardType[];
   packSize: number;
-  onComplete: () => void;
+  onComplete: (finalStats: { correct: number; total: number }) => void;
   onUpdateCard: (cardId: string, known: boolean) => void;
   studyMode: 'easy' | 'hard';
   deckId: string;
@@ -122,13 +121,16 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   };
 
   const handleFinishSession = () => {
+    const correctAnswers = sessionResults.filter(result => result.known).length;
+    const totalAnswers = sessionResults.length;
+    
     onResetSessionMarks();
     setShowSummary(false);
     setCurrentIndex(0);
     setSessionResults([]);
     setCompletedCards(new Set());
     setSessionCards(initialCards.map(card => ({ ...card, wasWrongInSession: false })));
-    onComplete();
+    onComplete({ correct: correctAnswers, total: totalAnswers });
   };
 
   const handleRetryFailed = () => {
