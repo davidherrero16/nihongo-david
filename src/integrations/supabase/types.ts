@@ -14,13 +14,19 @@ export type Database = {
           created_at: string
           deck_id: string
           difficulty: number
+          ease_factor: number | null
           has_been_wrong: boolean
           id: string
+          interval_modifier: number | null
           last_reviewed: string
+          last_score: number | null
           meaning: string
           next_review: string
           reading: string
+          repetitions: number | null
+          response_time: number | null
           review_count: number
+          srs_interval: number | null
           user_id: string
           was_wrong_in_session: boolean
           word: string
@@ -29,13 +35,19 @@ export type Database = {
           created_at?: string
           deck_id: string
           difficulty?: number
+          ease_factor?: number | null
           has_been_wrong?: boolean
           id?: string
+          interval_modifier?: number | null
           last_reviewed?: string
+          last_score?: number | null
           meaning: string
           next_review?: string
           reading: string
+          repetitions?: number | null
+          response_time?: number | null
           review_count?: number
+          srs_interval?: number | null
           user_id: string
           was_wrong_in_session?: boolean
           word: string
@@ -44,13 +56,19 @@ export type Database = {
           created_at?: string
           deck_id?: string
           difficulty?: number
+          ease_factor?: number | null
           has_been_wrong?: boolean
           id?: string
+          interval_modifier?: number | null
           last_reviewed?: string
+          last_score?: number | null
           meaning?: string
           next_review?: string
           reading?: string
+          repetitions?: number | null
+          response_time?: number | null
           review_count?: number
+          srs_interval?: number | null
           user_id?: string
           was_wrong_in_session?: boolean
           word?: string

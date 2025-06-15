@@ -80,9 +80,9 @@ export default {
 					fujiro: '#A597C5',
 					chairo: '#8B4513',
 					kinari: '#F8F4E6',
+					kin: '#D4A037', // Nuevo mostaza dorado visible
 					sumi: '#1C1C1C',
 					hai: '#9E9E9E',
-					kin: '#B8860B',
 					gin: '#C0C0C0',
 					sora: '#87CEEB',
 					momo: '#FFB6C1',

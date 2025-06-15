@@ -48,6 +48,9 @@
     --sidebar-accent-foreground: 28 28 28;
     --sidebar-border: 220 220 220;
     --sidebar-ring: 22 94 131;
+
+    /* Color amarillo (kin) más visible */
+    --japanese-yellow: 212 160 55; /* Nuevo mostaza más visible (#D4A037) */
   }
 
   .dark {
@@ -88,6 +91,9 @@
     --sidebar-accent-foreground: 248 246 240;
     --sidebar-border: 80 80 80;
     --sidebar-ring: 51 166 184;
+
+    /* Dark mode amarillo visible */
+    --japanese-yellow: 212 160 55;
   }
 }
 
@@ -97,24 +103,26 @@
   }
 
   body {
-    @apply bg-background text-foreground font-japanese text-base;
-    /* Mejorar la legibilidad del texto japonés */
+    @apply bg-background text-foreground font-japanese text-lg; /* Subo tamaño base */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-feature-settings: "kern" 1;
+    letter-spacing: 0.01em;
   }
 
-  /* Estilos específicos para texto japonés */
+  /* Mejoras legibilidad para fuentes japonesas */
   .japanese-text {
     @apply font-japanese;
-    letter-spacing: 0.02em;
+    font-size: 1.15rem;
+    letter-spacing: 0.04em;
     word-break: keep-all;
     overflow-wrap: break-word;
   }
 
   .kanji-text {
     @apply font-japanese-serif;
+    font-size: 1.25rem;
     font-feature-settings: "jp04" 1, "jp90" 1;
   }
 
@@ -227,6 +235,14 @@
       0 4px 6px rgba(22, 94, 131, 0.07),
       0 2px 4px rgba(22, 94, 131, 0.06),
       0 1px 2px rgba(22, 94, 131, 0.1);
+  }
+
+  /* Utilidad para el amarillo destacado */
+  .text-japanese-yellow {
+    color: rgb(var(--japanese-yellow));
+  }
+  .bg-japanese-yellow {
+    background-color: rgb(var(--japanese-yellow));
   }
 }
 
