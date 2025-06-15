@@ -308,7 +308,7 @@ const NumberExercise = () => {
                             item.isCorrect 
                               ? 'bg-green-100 text-green-800 border border-green-200' 
                               : item.char.startsWith('_') 
-                                ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' 
+                                ? 'bg-japanese-sora/20 text-japanese-ai border border-japanese-ai/30' 
                                 : 'bg-red-100 text-red-800 border border-red-200'
                           }`}
                         >

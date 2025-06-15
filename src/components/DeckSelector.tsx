@@ -28,7 +28,7 @@ const DeckSelector = ({ decks, currentDeckId, onSelectDeck, onCreateDeck }: Deck
     { bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-700', ring: 'ring-pink-500', icon: 'text-pink-600' },
     { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700', ring: 'ring-indigo-500', icon: 'text-indigo-600' },
     { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', ring: 'ring-red-500', icon: 'text-red-600' },
-    { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', ring: 'ring-yellow-500', icon: 'text-yellow-600' },
+    { bg: 'bg-japanese-sora/10', border: 'border-japanese-ai/30', text: 'text-japanese-ai', ring: 'ring-japanese-ai', icon: 'text-japanese-ai' },
   ];
 
   const getColorForDeck = (index: number) => {

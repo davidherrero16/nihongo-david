@@ -165,8 +165,8 @@ const StudyView = ({
                   <div className="font-bold text-red-600 text-lg">{analytics.overdue}</div>
                   <div className="text-gray-600">Vencidas</div>
                 </div>
-                <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                  <div className="font-bold text-yellow-600 text-lg">{analytics.young}</div>
+                                <div className="text-center p-3 bg-japanese-sora/20 rounded-lg">
+                <div className="font-bold text-japanese-ai text-lg">{analytics.young}</div>
                   <div className="text-gray-600">En aprendizaje</div>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
@@ -180,7 +180,7 @@ const StudyView = ({
                 <div className="flex items-center gap-2">
                   <span className={`font-semibold ${
                     analytics.retentionRate >= 85 ? 'text-green-600' :
-                    analytics.retentionRate >= 70 ? 'text-yellow-600' : 'text-red-600'
+                    analytics.retentionRate >= 70 ? 'text-japanese-midori' : 'text-red-600'
                   }`}>
                     {analytics.retentionRate.toFixed(1)}%
                   </span>
@@ -326,7 +326,7 @@ const StudyView = ({
                       </div>
                       <div className="space-y-1">
                         <div className="text-gray-500">Jóvenes</div>
-                        <div className="font-semibold text-yellow-600">{analytics.young}</div>
+                        <div className="font-semibold text-japanese-ai">{analytics.young}</div>
                       </div>
                       <div className="space-y-1">
                         <div className="text-gray-500">Maduras</div>
@@ -339,7 +339,7 @@ const StudyView = ({
                         <span className="text-gray-500">Retención:</span>
                         <span className={`font-semibold ${
                           analytics.retentionRate >= 85 ? 'text-green-600' :
-                          analytics.retentionRate >= 70 ? 'text-yellow-600' : 'text-red-600'
+                          analytics.retentionRate >= 70 ? 'text-japanese-midori' : 'text-red-600'
                         }`}>
                           {analytics.retentionRate.toFixed(1)}%
                         </span>
@@ -413,7 +413,7 @@ const StudyView = ({
                     <div>
                       <div className={`text-2xl font-bold ${
                         analytics.retentionPrediction >= 85 ? 'text-green-600' :
-                        analytics.retentionPrediction >= 70 ? 'text-yellow-600' : 'text-red-600'
+                        analytics.retentionPrediction >= 70 ? 'text-japanese-midori' : 'text-red-600'
                       }`}>
                         {analytics.retentionPrediction.toFixed(1)}%
                       </div>

@@ -27,7 +27,7 @@ const WelcomeMessage = () => {
         <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-2">
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
+                          <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-japanese-sakura" />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-blue-900 leading-tight text-center">
