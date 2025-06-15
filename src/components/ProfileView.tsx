@@ -128,7 +128,7 @@ const ProfileView = () => {
                 <h4 className="font-medium text-gray-700 mb-2">Estadísticas avanzadas</h4>
                 <p className="text-sm text-gray-600">Seguimiento detallado de tu progreso de aprendizaje</p>
               </div>
-              <div className="p-4 bg-gradient-to-r from-japanese-momo/20 to-japanese-sora/20 rounded-xl border border-japanese-momo/30 opacity-60">
+              <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-100 opacity-60">
                 <h4 className="font-medium text-gray-700 mb-2">Configuración de notificaciones</h4>
                 <p className="text-sm text-gray-600">Personaliza tus recordatorios de estudio</p>
               </div>

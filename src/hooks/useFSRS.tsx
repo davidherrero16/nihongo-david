@@ -223,7 +223,7 @@ export function useFSRS(cards: Card[], userId: string) {
       color = 'text-orange-600';
     } else if ((card.srsInterval || 1) < 21) {
       status = 'learning';
-      color = 'text-japanese-ai';
+      color = 'text-yellow-600';
     } else {
       status = 'mature';
       color = 'text-green-600';

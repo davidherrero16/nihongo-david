@@ -33,53 +33,53 @@ const FlashCard = ({ card, onAnswer }: FlashCardProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="perspective-1000">
         <Card 
-          className="min-h-[320px] cursor-pointer transition-all duration-500 transform hover:scale-102 shadow-japanese-lg border-japanese bg-gradient-to-br from-white to-japanese-sakura/30"
+          className="min-h-[300px] cursor-pointer transition-all duration-500 transform hover:scale-105 shadow-lg"
           onClick={handleFlip}
         >
-          <CardContent className="p-8 flex flex-col items-center justify-center min-h-[320px] text-center relative">
+          <CardContent className="p-8 flex flex-col items-center justify-center min-h-[300px] text-center relative">
             {/* Speaker button */}
             <Button
               variant="ghost"
               size="sm"
-              className="absolute top-4 right-4 text-japanese-secondary hover:text-japanese-primary transition-colors"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-primary"
               onClick={(e) => {
                 e.stopPropagation();
                 handleSpeak();
               }}
               disabled={isSpeaking}
             >
-              <Volume2 className={`h-5 w-5 ${isSpeaking ? 'animate-pulse text-japanese-accent' : ''}`} />
+              <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
             </Button>
 
             {!isFlipped ? (
-              // Frente de la tarjeta - Palabra japonesa
-              <div className="space-y-6">
-                <div className="flashcard-word japanese-text">
+              // Frente de la tarjeta
+              <div className="space-y-4">
+                <div className="text-4xl font-bold text-primary mb-2">
                   {card.word}
                 </div>
-                <div className="flashcard-reading japanese-text">
+                <div className="text-xl text-muted-foreground">
                   {card.reading}
                 </div>
-                <p className="text-sm text-japanese-secondary mt-12 font-japanese">
+                <p className="text-sm text-muted-foreground mt-8">
                   Haz clic para ver el significado
                 </p>
               </div>
             ) : (
-              // Reverso de la tarjeta - Significado
-              <div className="space-y-6">
-                <div className="text-kanji-lg font-japanese-serif font-medium text-japanese-primary mb-2">
+              // Reverso de la tarjeta
+              <div className="space-y-4">
+                <div className="text-2xl font-semibold text-primary mb-2">
                   {card.word}
                 </div>
-                <div className="text-kanji-base font-japanese text-japanese-secondary mb-6">
+                <div className="text-lg text-muted-foreground mb-4">
                   {card.reading}
                 </div>
-                <div className="flashcard-meaning font-japanese">
+                <div className="text-xl font-medium">
                   {card.meaning}
                 </div>
-                <p className="text-sm text-japanese-secondary mt-12 font-japanese">
+                <p className="text-sm text-muted-foreground mt-8">
                   ¿Conocías esta tarjeta?
                 </p>
               </div>
@@ -88,44 +88,40 @@ const FlashCard = ({ card, onAnswer }: FlashCardProps) => {
         </Card>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {isFlipped && (
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-2 justify-center">
             <Button 
               onClick={handleKnown}
               variant="outline"
-              className="flex-1 max-w-xs font-japanese text-base py-3 h-auto bg-gradient-to-r from-japanese-wakaba/10 to-japanese-midori/10 text-japanese-midori border-japanese-midori/30 hover:bg-japanese-midori/5 hover:border-japanese-midori/50 transition-all duration-300"
+              className="flex-1 max-w-xs text-green-600 border-green-200 hover:bg-green-50"
             >
-              <Check className="h-5 w-5 mr-2" />
+              <Check className="h-4 w-4 mr-2" />
               Lo sé
             </Button>
             <Button 
               onClick={handleUnknown}
               variant="outline"
-              className="flex-1 max-w-xs font-japanese text-base py-3 h-auto bg-gradient-to-r from-japanese-beni/10 to-japanese-aka/10 text-japanese-beni border-japanese-beni/30 hover:bg-japanese-beni/5 hover:border-japanese-beni/50 transition-all duration-300"
+              className="flex-1 max-w-xs text-red-600 border-red-200 hover:bg-red-50"
             >
-              <X className="h-5 w-5 mr-2" />
+              <X className="h-4 w-4 mr-2" />
               No lo sé
             </Button>
           </div>
         )}
 
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-center gap-2">
           <Button 
             onClick={handleSpeak}
             variant="secondary"
-            size="default"
+            size="sm"
             disabled={isSpeaking}
-            className="flex items-center gap-2 font-japanese bg-japanese-asagi/10 text-japanese-ai border-japanese-asagi/30 hover:bg-japanese-asagi/20 transition-all duration-300"
+            className="flex items-center gap-2"
           >
             <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
             Pronunciar
           </Button>
-          <Button 
-            onClick={handleFlip} 
-            variant="secondary"
-            className="font-japanese bg-japanese-fujiro/10 text-japanese-murasaki border-japanese-fujiro/30 hover:bg-japanese-fujiro/20 transition-all duration-300"
-          >
+          <Button onClick={handleFlip} variant="secondary">
             {isFlipped ? 'Ver palabra' : 'Ver significado'}
           </Button>
         </div>

@@ -361,7 +361,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     if (difficulty === 0) return "text-gray-500";
     if (difficulty <= 2) return "text-red-500";
     if (difficulty <= 4) return "text-orange-500";
-    if (difficulty <= 6) return "text-japanese-ai";
+    if (difficulty <= 6) return "text-yellow-500";
     if (difficulty <= 8) return "text-green-500";
     return "text-blue-500";
   };
@@ -480,7 +480,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
                 <span className="text-gray-600">Retención:</span>
                 <span className={`font-semibold ${
                   sessionStats.retentionRate >= 85 ? 'text-green-600' :
-                  sessionStats.retentionRate >= 70 ? 'text-japanese-midori' : 'text-red-600'
+                  sessionStats.retentionRate >= 70 ? 'text-yellow-600' : 'text-red-600'
                 }`}>
                   {sessionStats.retentionRate.toFixed(0)}%
                 </span>

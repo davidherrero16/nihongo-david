@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,86 +7,82 @@
 
 @layer base {
   :root {
-    /* Tema japonés tradicional - Colores claros */
-    --background: 248 246 240; /* kinari - crema natural */
-    --foreground: 28 28 28; /* sumi - negro tinta */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-    --card: 255 255 255;
-    --card-foreground: 28 28 28;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 255 255 255;
-    --popover-foreground: 28 28 28;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 22 94 131; /* ai - índigo tradicional */
-    --primary-foreground: 248 246 240;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 165 151 197; /* fujiro - lila wisteria */
-    --secondary-foreground: 28 28 28;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 248 246 240; /* kinari */
-    --muted-foreground: 158 158 158; /* hai - gris ceniza */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 51 166 184; /* asagi - azul claro */
-    --accent-foreground: 255 255 255;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 210 31 47; /* beni - bermellón */
-    --destructive-foreground: 248 246 240;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 220 220 220;
-    --input: 240 240 240;
-    --ring: 22 94 131; /* ai */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
 
-    /* Sidebar con tema japonés */
-    --sidebar-background: 248 246 240;
-    --sidebar-foreground: 28 28 28;
-    --sidebar-primary: 34 58 112; /* kon - azul marino */
-    --sidebar-primary-foreground: 248 246 240;
-    --sidebar-accent: 240 238 232;
-    --sidebar-accent-foreground: 28 28 28;
-    --sidebar-border: 220 220 220;
-    --sidebar-ring: 22 94 131;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    /* Tema japonés tradicional - Colores oscuros */
-    --background: 28 28 28; /* sumi */
-    --foreground: 248 246 240; /* kinari */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 40 40 40;
-    --card-foreground: 248 246 240;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 40 40 40;
-    --popover-foreground: 248 246 240;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 51 166 184; /* asagi */
-    --primary-foreground: 28 28 28;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 136 72 152; /* murasaki */
-    --secondary-foreground: 248 246 240;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 50 50 50;
-    --muted-foreground: 158 158 158;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 62 126 0; /* matcha */
-    --accent-foreground: 248 246 240;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 220 20 60; /* aka */
-    --destructive-foreground: 248 246 240;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 80 80 80;
-    --input: 60 60 60;
-    --ring: 51 166 184;
-
-    --sidebar-background: 28 28 28;
-    --sidebar-foreground: 248 246 240;
-    --sidebar-primary: 51 166 184;
-    --sidebar-primary-foreground: 28 28 28;
-    --sidebar-accent: 50 50 50;
-    --sidebar-accent-foreground: 248 246 240;
-    --sidebar-border: 80 80 80;
-    --sidebar-ring: 51 166 184;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -97,42 +92,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-japanese text-base;
-    /* Mejorar la legibilidad del texto japonés */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    font-feature-settings: "kern" 1;
-  }
-
-  /* Estilos específicos para texto japonés */
-  .japanese-text {
-    @apply font-japanese;
-    letter-spacing: 0.02em;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-  }
-
-  .kanji-text {
-    @apply font-japanese-serif;
-    font-feature-settings: "jp04" 1, "jp90" 1;
-  }
-
-  /* Mejorar legibilidad en tarjetas de estudio */
-  .flashcard-word {
-    @apply text-kanji-2xl font-japanese-serif font-medium;
-    color: hsl(var(--primary));
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  }
-
-  .flashcard-reading {
-    @apply text-kanji-lg font-japanese font-normal;
-    color: hsl(var(--muted-foreground));
-  }
-
-  .flashcard-meaning {
-    @apply text-lg font-japanese font-medium;
-    color: hsl(var(--foreground));
+    @apply bg-background text-foreground;
   }
 }
 
@@ -180,53 +140,6 @@
   
   .delay-500 {
     animation-delay: 0.5s;
-  }
-
-  /* Utilidades para tema japonés */
-  .bg-japanese-gradient {
-    background: linear-gradient(135deg, 
-      hsl(var(--background)) 0%, 
-      rgb(248 246 240) 50%, 
-      rgb(240 238 232) 100%);
-  }
-
-  .text-japanese-primary {
-    color: rgb(22 94 131); /* ai */
-  }
-
-  .text-japanese-secondary {
-    color: rgb(136 72 152); /* murasaki */
-  }
-
-  .text-japanese-accent {
-    color: rgb(34 125 81); /* midori */
-  }
-
-  .border-japanese {
-    border-color: rgb(220 220 220);
-  }
-
-  /* Colores adicionales para el tema */
-  .bg-japanese-kinari {
-    background-color: rgb(248 246 240);
-  }
-  
-  .hover\:scale-102:hover {
-    transform: scale(1.02);
-  }
-
-  /* Sombras sutiles inspiradas en arte japonés */
-  .shadow-japanese {
-    box-shadow: 
-      0 1px 3px rgba(22, 94, 131, 0.12),
-      0 1px 2px rgba(22, 94, 131, 0.24);
-  }
-
-  .shadow-japanese-lg {
-    box-shadow: 
-      0 4px 6px rgba(22, 94, 131, 0.07),
-      0 2px 4px rgba(22, 94, 131, 0.06),
-      0 1px 2px rgba(22, 94, 131, 0.1);
   }
 }
 

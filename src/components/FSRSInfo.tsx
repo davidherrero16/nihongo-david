@@ -112,7 +112,7 @@ export const FSRSInfo = ({ cards, currentCard, userId, className = "" }: FSRSInf
               <span className="text-sm text-muted-foreground">Retención:</span>
               <span className={`text-sm font-medium ${
                 sessionStats.retentionRate >= 85 ? 'text-green-600' :
-                sessionStats.retentionRate >= 70 ? 'text-japanese-midori' : 'text-red-600'
+                sessionStats.retentionRate >= 70 ? 'text-yellow-600' : 'text-red-600'
               }`}>
                 {sessionStats.retentionRate.toFixed(0)}%
               </span>
@@ -154,7 +154,7 @@ export const FSRSInfo = ({ cards, currentCard, userId, className = "" }: FSRSInf
             </div>
             <div className="space-y-1">
               <div className="text-muted-foreground">Jóvenes</div>
-                              <div className="font-medium text-japanese-ai">{analytics.young}</div>
+              <div className="font-medium text-yellow-600">{analytics.young}</div>
             </div>
             <div className="space-y-1">
               <div className="text-muted-foreground">Maduras</div>
@@ -248,7 +248,7 @@ export const FSRSInfo = ({ cards, currentCard, userId, className = "" }: FSRSInf
             <span className="text-sm text-muted-foreground">Retención prevista:</span>
             <span className={`text-sm font-medium ${
               analytics.retentionPrediction >= 85 ? 'text-green-600' :
-                              analytics.retentionPrediction >= 70 ? 'text-japanese-midori' : 'text-red-600'
+              analytics.retentionPrediction >= 70 ? 'text-yellow-600' : 'text-red-600'
             }`}>
               {analytics.retentionPrediction.toFixed(1)}%
             </span>
