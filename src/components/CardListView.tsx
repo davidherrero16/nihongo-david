@@ -1,9 +1,8 @@
-
 import { List, FileText } from "lucide-react";
 import DeckSelector from "@/components/DeckSelector";
 import CardList from "@/components/CardList";
 import ImportPopup from "@/components/ImportPopup";
-import { Deck } from "@/hooks/useSupabaseDecks";
+import { Deck } from "@/types/deck";
 
 interface CardListViewProps {
   decks: Deck[];

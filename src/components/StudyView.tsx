@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Brain, PenTool, Settings, Upload } from "lucide-react";
-import { Card, Deck } from "@/hooks/useSupabaseDecks";
+import { Card, Deck } from "@/types/deck";
 import DeckSelector from "@/components/DeckSelector";
 import DeckStats from "@/components/DeckStats";
 import FlashCard from "@/components/FlashCard";

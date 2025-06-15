@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2, RotateCcw, Archive, Search, X, FolderMinus } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import type { Card as CardType } from "@/hooks/useSupabaseDecks";
+import type { Card as CardType } from "@/types/deck";
 
 interface CardListProps {
   cards: CardType[];

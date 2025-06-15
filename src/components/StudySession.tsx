@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, RotateCcw, ArrowRight } from "lucide-react";
 import FlashCard from "@/components/FlashCard";
-import type { Card as CardType } from "@/hooks/useSupabaseDecks";
+import type { Card as CardType } from "@/types/deck";
 
 interface StudySessionProps {
   cards: CardType[];

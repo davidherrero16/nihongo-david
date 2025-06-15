@@ -2,7 +2,7 @@
 import { PlusCircle } from "lucide-react";
 import DeckSelector from "@/components/DeckSelector";
 import AddCardForm from "@/components/AddCardForm";
-import { Deck } from "@/hooks/useSupabaseDecks";
+import { Deck } from "@/types/deck";
 
 interface AddCardViewProps {
   decks: Deck[];
