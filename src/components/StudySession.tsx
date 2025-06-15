@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,7 +42,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   const totalCards = initialCards.length;
   const progress = (completedCards.size / totalCards) * 100;
 
-  console.log(`Estado actual: ${completedCards.size}/${totalCards} completadas, ${sessionCards.length} en ronda actual`);
+  console.log(`Estado actual: ${completedCards.size}/${totalCards} completadas, ${sessionCards.length} en ronda actual, índice: ${currentIndex}`);
 
   const handleAnswer = (known: boolean) => {
     if (!currentCard) return;
@@ -62,24 +63,28 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
 
     if (known) {
       // Si es correcta, marcar como completada
-      setCompletedCards(prev => new Set([...prev, currentCard.id]));
+      const newCompletedCards = new Set([...completedCards, currentCard.id]);
+      setCompletedCards(newCompletedCards);
       
       // Remover la tarjeta actual de sessionCards
       const newSessionCards = sessionCards.filter((_, index) => index !== currentIndex);
       setSessionCards(newSessionCards);
       
-      console.log(`Tarjeta ${currentCard.word} completada. Completadas: ${completedCards.size + 1}/${totalCards}, quedan ${newSessionCards.length} en ronda`);
+      console.log(`Tarjeta ${currentCard.word} completada. Completadas: ${newCompletedCards.size}/${totalCards}, quedan ${newSessionCards.length} en ronda`);
       
-      // Si hemos completado todas las tarjetas originales, mostrar resumen
-      if (completedCards.size + 1 >= totalCards) {
+      // Verificar si hemos completado todas las tarjetas originales
+      if (newCompletedCards.size >= totalCards) {
         console.log('Todas las tarjetas completadas, mostrando resumen');
         setShowSummary(true);
         return;
       }
       
       // Ajustar índice si es necesario
-      if (currentIndex >= newSessionCards.length && newSessionCards.length > 0) {
-        setCurrentIndex(0);
+      if (newSessionCards.length > 0) {
+        if (currentIndex >= newSessionCards.length) {
+          setCurrentIndex(0);
+        }
+        // Si el índice actual sigue siendo válido, mantenerlo
       }
     } else {
       // Si es incorrecta, marcar como incorrecta en sesión y continuar
@@ -92,10 +97,9 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
       console.log(`Tarjeta ${currentCard.word} marcada como incorrecta en sesión`);
       
       // Avanzar al siguiente índice
-      if (currentIndex + 1 >= sessionCards.length) {
-        setCurrentIndex(0);
-      } else {
-        setCurrentIndex(prev => prev + 1);
+      if (sessionCards.length > 1) {
+        const nextIndex = (currentIndex + 1) % sessionCards.length;
+        setCurrentIndex(nextIndex);
       }
     }
   };
