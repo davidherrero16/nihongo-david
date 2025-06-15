@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -157,17 +156,28 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
         content = pasteText;
       }
       
+      console.log('Contenido a procesar:', content.substring(0, 200) + '...');
+      
       let cards: any[] = [];
       
       if (importMode === 'paste') {
+        // Intentar primero formato dash
+        console.log('Intentando formato dash...');
         cards = parseDashFormat(content);
+        console.log('Tarjetas parseadas con dash format:', cards.length);
         
+        // Si no funciona, intentar formato Anki
         if (cards.length === 0 && content.includes('\t')) {
+          console.log('Intentando formato Anki...');
           cards = parseAnkiTxt(content);
+          console.log('Tarjetas parseadas con Anki format:', cards.length);
         }
         
+        // Si aún no funciona, intentar CSV
         if (cards.length === 0) {
+          console.log('Intentando formato CSV...');
           cards = parseCSV(content);
+          console.log('Tarjetas parseadas con CSV format:', cards.length);
         }
       } else if (file) {
         if (file.name.endsWith('.csv')) {
@@ -190,32 +200,42 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
         }
       }
       
+      console.log('Tarjetas procesadas inicialmente:', cards.length);
+      
       if (cards.length === 0) {
         toast({
           title: "Error al importar",
-          description: "No se encontraron tarjetas válidas en el contenido",
+          description: "No se encontraron tarjetas válidas en el contenido. Verifica que el formato sea: palabra - lectura - significado",
           variant: "destructive"
         });
         return;
       }
 
       // Filtrar tarjetas válidas (que tengan todos los campos)
-      const validCards = cards.filter(card => 
-        card.word && card.word.trim() && 
-        card.reading && card.reading.trim() && 
-        card.meaning && card.meaning.trim()
-      );
+      const validCards = cards.filter(card => {
+        const isValid = card.word && card.word.trim() && 
+                       card.reading && card.reading.trim() && 
+                       card.meaning && card.meaning.trim();
+        
+        if (!isValid) {
+          console.log('Tarjeta inválida:', card);
+        }
+        
+        return isValid;
+      });
+
+      console.log(`Tarjetas válidas filtradas: ${validCards.length} de ${cards.length}`);
 
       if (validCards.length === 0) {
         toast({
           title: "Error al importar",
-          description: "No se encontraron tarjetas válidas con todos los campos completos",
+          description: "No se encontraron tarjetas válidas con todos los campos completos. Formato esperado: palabra - lectura - significado",
           variant: "destructive"
         });
         return;
       }
 
-      console.log(`Importando ${validCards.length} tarjetas válidas de ${cards.length} tarjetas procesadas`);
+      console.log(`Importando ${validCards.length} tarjetas válidas:`, validCards.slice(0, 3));
       
       await onImport(deckName.trim(), validCards);
       
@@ -231,7 +251,7 @@ const ImportDeck = ({ onImport }: ImportDeckProps) => {
       console.error('Error durante la importación:', error);
       toast({
         title: "Error al procesar contenido",
-        description: "Verifica que el formato sea correcto",
+        description: "Verifica que el formato sea correcto: palabra - lectura - significado",
         variant: "destructive"
       });
     } finally {

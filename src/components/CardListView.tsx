@@ -55,11 +55,9 @@ const CardListView = ({
           onSelectDeck={onSelectDeck}
           onCreateDeck={onCreateDeck}
         />
-      </div>
-      
-      {/* Import button */}
-      <div className="flex justify-center">
-        <div className="bg-white rounded-2xl shadow-lg border-0 p-4">
+        
+        {/* Import button moved here, below deck selector */}
+        <div className="flex justify-center mt-6 pt-4 border-t border-gray-100">
           <ImportPopup onImport={onImport} />
         </div>
       </div>
