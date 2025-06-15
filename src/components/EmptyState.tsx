@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Plus } from "lucide-react";
@@ -9,17 +8,17 @@ interface EmptyStateProps {
 
 const EmptyState = ({ onAddCard }: EmptyStateProps) => {
   return (
-    <Card className="text-center py-12">
+    <Card className="text-center py-12 bg-white dark:bg-gray-800">
       <CardContent className="space-y-6">
-        <div className="mx-auto w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center">
-          <BookOpen className="h-12 w-12 text-blue-500" />
+        <div className="mx-auto w-24 h-24 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+          <BookOpen className="h-12 w-12 text-blue-500 dark:text-blue-400" />
         </div>
         
         <div className="space-y-2">
-          <h3 className="text-xl font-semibold text-gray-900">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
             ¡Comienza tu aventura de aprendizaje!
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 max-w-md mx-auto">
             Este grupo no tiene tarjetas aún. Añade tu primera tarjeta para comenzar a estudiar japonés.
           </p>
         </div>
@@ -31,7 +30,7 @@ const EmptyState = ({ onAddCard }: EmptyStateProps) => {
           </Button>
         </div>
 
-        <div className="text-sm text-gray-500 space-y-1">
+        <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
           <p>💡 <strong>Consejo:</strong> Puedes añadir palabras, frases o kanji</p>
           <p>🎯 Las tarjetas se revisan según tu progreso de aprendizaje</p>
         </div>

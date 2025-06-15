@@ -8,6 +8,8 @@ import type { Card as CardType } from "@/types/deck";
 import { useFSRS } from "@/hooks/useFSRS";
 import { useAuth } from "@/hooks/useAuth";
 import FSRSInfo from "@/components/FSRSInfo";
+import { toast } from "@/components/ui/use-toast";
+import { debugCardState } from "@/utils/fsrsAlgorithm";
 
 interface StudySessionProps {
   cards: CardType[];
@@ -47,6 +49,9 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   
   console.log(`Iniciando sesión FSRS con ${initialCards.length} tarjetas válidas de ${cards.length} disponibles`);
   
+  // Debug: Mostrar estado inicial de las tarjetas
+  debugCardState(initialCards);
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
   const [showSummary, setShowSummary] = useState(false);
@@ -56,11 +61,13 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   );
   const [startTime, setStartTime] = useState<Date>(new Date());
   const [showFSRSInfo, setShowFSRSInfo] = useState(false);
+  const [processedCards, setProcessedCards] = useState<Set<string>>(new Set());
+  const [isRetryMode, setIsRetryMode] = useState(false);
 
   // Obtener tarjetas no completadas para navegar
   const remainingCards = sessionCards.filter(card => !completedCards.has(card.id));
   const currentCard = remainingCards.length > 0 ? remainingCards[currentIndex % remainingCards.length] : null;
-  const totalCards = initialCards.length;
+  const totalCards = sessionCards.length;
   const progress = (completedCards.size / totalCards) * 100;
 
   console.log(`Estado actual: ${completedCards.size}/${totalCards} completadas, ${remainingCards.length} restantes, índice: ${currentIndex}`);
@@ -75,11 +82,43 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
   const handleAnswer = async (known: boolean) => {
     if (!currentCard || !user) return;
 
+    // Verificar si la tarjeta ya fue procesada en esta sesión
+    if (processedCards.has(currentCard.id)) {
+      console.log(`FSRS: Tarjeta ${currentCard.word} ya fue procesada en esta sesión, saltando actualización`);
+      
+      // Solo manejar la lógica de navegación
+      if (known) {
+        const newCompletedCards = new Set([...completedCards, currentCard.id]);
+        setCompletedCards(newCompletedCards);
+        
+        if (newCompletedCards.size >= sessionCards.length) {
+          setShowSummary(true);
+          return;
+        }
+        
+        const newRemainingCards = sessionCards.filter(card => !newCompletedCards.has(card.id));
+        if (newRemainingCards.length === 0) {
+          setShowSummary(true);
+          return;
+        }
+        
+        setCurrentIndex(prev => prev % newRemainingCards.length);
+      } else {
+        if (remainingCards.length > 1) {
+          setCurrentIndex(prev => (prev + 1) % remainingCards.length);
+        }
+      }
+      return;
+    }
+
     console.log(`FSRS: Respuesta para tarjeta ${currentCard.word}: ${known ? 'Correcta' : 'Incorrecta'}`);
 
+    // Marcar la tarjeta como procesada
+    setProcessedCards(prev => new Set([...prev, currentCard.id]));
+
     try {
-      // Procesar respuesta con FSRS
-      const fsrsResult = await processAnswer(currentCard, known, undefined, onUpdateCard);
+      // Procesar respuesta con FSRS (sin pasar onUpdateCard para evitar doble actualización)
+      const fsrsResult = await processAnswer(currentCard, known, undefined);
 
       console.log(`FSRS: Tarjeta procesada exitosamente. Próximo intervalo: ${fsrsResult.interval} días`);
       
@@ -99,9 +138,9 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
         
         console.log(`FSRS: Tarjeta ${currentCard.word} completada. Completadas: ${newCompletedCards.size}/${totalCards}`);
         
-        // Verificar si hemos completado todas las tarjetas originales
-        if (newCompletedCards.size >= totalCards) {
-          console.log('FSRS: Todas las tarjetas completadas, mostrando resumen');
+        // Verificar si hemos completado todas las tarjetas de la sesión actual
+        if (newCompletedCards.size >= sessionCards.length) {
+          console.log('FSRS: Todas las tarjetas de la sesión completadas, mostrando resumen');
           setShowSummary(true);
           return;
         }
@@ -138,14 +177,19 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
       // En caso de error con FSRS, usar fallback pero sin duplicar actualizaciones
       try {
         console.log('FSRS: Usando sistema de fallback para actualizar tarjeta');
-        onUpdateCard(currentCard.id, known);
+        
+        // Solo llamar onUpdateCard si no se pudo actualizar con FSRS
+        // y la tarjeta no ha sido procesada antes
+        if (!processedCards.has(currentCard.id)) {
+          onUpdateCard(currentCard.id, known);
+        }
         
         // Manejar lógica de sesión localmente
         if (known) {
           const newCompletedCards = new Set([...completedCards, currentCard.id]);
           setCompletedCards(newCompletedCards);
           
-          if (newCompletedCards.size >= totalCards) {
+          if (newCompletedCards.size >= sessionCards.length) {
             setShowSummary(true);
             return;
           }
@@ -170,6 +214,12 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
         }
       } catch (fallbackError) {
         console.error('Error en sistema de fallback:', fallbackError);
+        // Mostrar error al usuario pero continuar con la sesión
+        toast({
+          title: "Error",
+          description: "Hubo un problema al actualizar la tarjeta, pero la sesión continuará",
+          variant: "destructive",
+        });
       }
     }
     
@@ -186,6 +236,8 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     setCurrentIndex(0);
     setSessionResults([]);
     setCompletedCards(new Set());
+    setProcessedCards(new Set());
+    setIsRetryMode(false); // Resetear modo de repaso
     setSessionCards(initialCards.map(card => ({ ...card, wasWrongInSession: false })));
     resetSessionStats();
     onComplete({ correct: correctAnswers, total: totalAnswers });
@@ -199,11 +251,19 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
     }
 
     // Reiniciar con las tarjetas falladas
-    setSessionCards(failedCards.map(result => ({ ...result.card, wasWrongInSession: true })));
+    const retryCards = failedCards.map(result => ({ ...result.card, wasWrongInSession: true }));
+    setSessionCards(retryCards);
     setCurrentIndex(0);
     setSessionResults([]);
     setShowSummary(false);
     setCompletedCards(new Set());
+    setProcessedCards(new Set());
+    setIsRetryMode(true); // Marcar como modo de repaso
+    
+    // Reiniciar estadísticas de la sesión para el repaso
+    resetSessionStats();
+    
+    console.log(`Iniciando repaso de ${retryCards.length} tarjetas falladas`);
   };
 
   // Create wrapper functions for button clicks
@@ -243,7 +303,7 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
           <CardHeader className="text-center">
             <CardTitle className="text-2xl flex items-center justify-center gap-2">
               <CheckCircle className="h-6 w-6 text-green-500" />
-              Sesión Completada
+              {isRetryMode ? 'Repaso Completado' : 'Sesión Completada'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -251,7 +311,9 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
               <div className="text-4xl font-bold text-primary mb-2">
                 {completedCards.size}/{totalCards}
               </div>
-              <p className="text-muted-foreground">Tarjetas dominadas en esta sesión</p>
+              <p className="text-muted-foreground">
+                {isRetryMode ? 'Tarjetas dominadas en el repaso' : 'Tarjetas dominadas en esta sesión'}
+              </p>
             </div>
 
             <div className="space-y-3">

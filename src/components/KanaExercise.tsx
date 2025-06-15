@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, RefreshCw, Settings, Shuffle, PenTool, Languages, Trophy, Target, RotateCcw } from "lucide-react";
+import { Check, X, RefreshCw, Settings, Shuffle, Languages, Trophy, Target, RotateCcw } from "lucide-react";
 
 // Datos de hiragana y katakana
 const hiraganaChars = {
@@ -64,7 +63,7 @@ const phrases = [
 
 type KanaType = 'hiragana' | 'katakana';
 type CharSetType = 'basic' | 'dakuten' | 'all';
-type ExerciseMode = 'kana-to-romaji' | 'romaji-to-kana' | 'phrase' | 'writing';
+type ExerciseMode = 'kana-to-romaji' | 'romaji-to-kana' | 'phrase';
 
 const KanaExercise = () => {
   const [kanaType, setKanaType] = useState<KanaType>('hiragana');
@@ -103,7 +102,7 @@ const KanaExercise = () => {
     const keys = Object.keys(chars);
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     
-    if (mode === 'kana-to-romaji' || mode === 'writing') {
+    if (mode === 'kana-to-romaji') {
       setCurrentChar(randomKey);
       setCurrentAnswer(chars[randomKey]);
     } else {
@@ -138,7 +137,7 @@ const KanaExercise = () => {
   };
 
   const getQuestion = () => {
-    if (mode === 'kana-to-romaji' || mode === 'writing') {
+    if (mode === 'kana-to-romaji') {
       return `¿Cómo se lee "${currentChar}" en romaji?`;
     } else if (mode === 'romaji-to-kana') {
       return `¿Cómo se escribe "${currentChar}" en ${kanaType}?`;
@@ -163,24 +162,17 @@ const KanaExercise = () => {
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       {/* Header with stats */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="p-3 bg-purple-100 rounded-full">
-            <Languages className="h-8 w-8 text-purple-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Ejercicio de kana</h1>
-        </div>
-        
         {/* Score display */}
         <div className="flex items-center justify-center gap-6">
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full border border-green-200">
-            <Trophy className="h-5 w-5 text-green-600" />
-            <span className="font-semibold text-green-700">
+          <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-full border border-green-200 dark:border-green-700">
+            <Trophy className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <span className="font-semibold text-green-700 dark:text-green-300">
               {score.correct}/{score.total}
             </span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full border border-blue-200">
-            <Target className="h-5 w-5 text-blue-600" />
-            <span className="font-semibold text-blue-700">
+          <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-full border border-blue-200 dark:border-blue-700">
+            <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="font-semibold text-blue-700 dark:text-blue-300">
               {getScorePercentage()}% precisión
             </span>
           </div>
@@ -192,14 +184,14 @@ const KanaExercise = () => {
       </div>
 
       {/* Main exercise card */}
-      <Card className="animate-fade-in shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+      <Card className="animate-fade-in shadow-lg border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
         <CardHeader className="pb-4">
           {/* Mode selector */}
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-center gap-3">
               <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">Tipo:</span>
+                <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Tipo:</span>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -223,8 +215,8 @@ const KanaExercise = () => {
             
             <div className="flex items-center justify-center gap-3">
               <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">Conjunto:</span>
+                <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Conjunto:</span>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -254,10 +246,10 @@ const KanaExercise = () => {
               </div>
             </div>
             
-            <div className="flex items-center justify-center gap-3 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">Modo:</span>
+                <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Modo:</span>
               </div>
               <div className="flex flex-wrap gap-2 justify-center">
                 <Button
@@ -284,15 +276,6 @@ const KanaExercise = () => {
                 >
                   Frases
                 </Button>
-                <Button
-                  variant={mode === 'writing' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setMode('writing')}
-                  className="text-xs"
-                >
-                  <PenTool className="h-3 w-3 mr-1" />
-                  Escritura
-                </Button>
               </div>
             </div>
           </div>
@@ -301,33 +284,13 @@ const KanaExercise = () => {
         <CardContent className="space-y-8">
           {/* Question */}
           <div className="text-center">
-            <div className="inline-block p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-100 mb-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            <div className="inline-block p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 rounded-2xl border border-purple-100 dark:border-purple-700 mb-6">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
                 {getQuestion()}
               </h3>
-              {mode === 'writing' ? (
-                <div className="space-y-4 mt-6">
-                  <div className="text-lg font-medium text-muted-foreground">
-                    Escribe en romaji: {currentAnswer}
-                  </div>
-                  <div className="border-2 border-dashed border-muted-foreground rounded-lg h-32 flex items-center justify-center bg-muted/20">
-                    <div className="text-center">
-                      <PenTool className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">Área de escritura</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        (Funcionalidad de dibujo próximamente)
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Por ahora, escribe la respuesta abajo:
-                  </p>
-                </div>
-              ) : (
-                <div className="text-6xl font-bold text-primary mt-4">
-                  {currentChar}
-                </div>
-              )}
+              <div className="text-6xl font-bold text-primary mt-4">
+                {currentChar}
+              </div>
             </div>
 
             {/* Answer input */}
@@ -341,12 +304,12 @@ const KanaExercise = () => {
                   }
                 }}
                 placeholder={mode === 'romaji-to-kana' ? 'Escribe en kana...' : 'Escribe en romaji...'}
-                className="text-lg text-center py-6 text-gray-700 border-2 border-gray-200 focus:border-purple-400 rounded-xl"
+                className="text-lg text-center py-6 text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-500 rounded-xl bg-white dark:bg-gray-800"
                 disabled={showResult}
               />
               
               {/* Action buttons */}
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-3 justify-center mt-6">
                 {!showResult ? (
                   <>
                     <Button 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +27,7 @@ const ImportPopup = ({ onImport, trigger }: ImportPopupProps) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm">
+          <Button variant="outline" className="w-full">
             <Upload className="h-4 w-4 mr-2" />
             Importar deck
           </Button>

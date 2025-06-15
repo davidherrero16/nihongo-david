@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ const NumberExercise = () => {
   const [currentNumber, setCurrentNumber] = useState<number>(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [mode, setMode] = useState<'toJapanese' | 'toNumber'>('toJapanese');
-  const [maxNumber, setMaxNumber] = useState<number>(9999);
+  const [maxNumber, setMaxNumber] = useState<number>(10000000);
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [feedback, setFeedback] = useState<{
     show: boolean;
@@ -154,24 +153,18 @@ const NumberExercise = () => {
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       {/* Header with stats */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="p-3 bg-blue-100 rounded-full">
-            <Calculator className="h-8 w-8 text-blue-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Ejercicio de números</h1>
-        </div>
         
         {/* Score display */}
         <div className="flex items-center justify-center gap-6">
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full border border-green-200">
-            <Trophy className="h-5 w-5 text-green-600" />
-            <span className="font-semibold text-green-700">
+          <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-full border border-green-200 dark:border-green-700">
+            <Trophy className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <span className="font-semibold text-green-700 dark:text-green-300">
               {score.correct}/{score.total}
             </span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full border border-blue-200">
-            <Target className="h-5 w-5 text-blue-600" />
-            <span className="font-semibold text-blue-700">
+          <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-full border border-blue-200 dark:border-blue-700">
+            <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="font-semibold text-blue-700 dark:text-blue-300">
               {getScorePercentage()}% precisión
             </span>
           </div>
@@ -183,7 +176,7 @@ const NumberExercise = () => {
       </div>
 
       {/* Main exercise card */}
-      <Card className="animate-fade-in shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+      <Card className="animate-fade-in shadow-lg border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
         <CardHeader className="pb-4">
           {/* Mode selector */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -208,10 +201,10 @@ const NumberExercise = () => {
           </div>
           
           {/* Range selector */}
-          <div className="flex items-center justify-center gap-3 pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2">
-              <Settings className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-600">Rango:</span>
+              <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Rango:</span>
             </div>
             <Select value={maxNumber.toString()} onValueChange={(value) => setMaxNumber(parseInt(value))}>
               <SelectTrigger className="w-48">
@@ -231,8 +224,8 @@ const NumberExercise = () => {
         <CardContent className="space-y-8">
           {/* Question */}
           <div className="text-center">
-            <div className="inline-block p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-100 mb-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            <div className="inline-block p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-2xl border border-blue-100 dark:border-blue-700 mb-6">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
                 {getQuestion()}
               </h3>
             </div>
@@ -244,7 +237,7 @@ const NumberExercise = () => {
                 onChange={(e) => setUserAnswer(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
                 placeholder={mode === 'toJapanese' ? 'Escribe en japonés...' : 'Escribe el número...'}
-                className="text-lg text-center py-6 text-gray-700 border-2 border-gray-200 focus:border-blue-400 rounded-xl"
+                className="text-lg text-center py-6 text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-500 rounded-xl bg-white dark:bg-gray-800"
                 disabled={feedback.show && feedback.isCorrect}
               />
               
@@ -274,42 +267,42 @@ const NumberExercise = () => {
 
           {/* Feedback */}
           {feedback.show && (
-            <div className={`p-6 rounded-2xl border-2 animate-fade-in ${
+            <div className={`p-4 rounded-xl border-2 animate-fade-in ${
               feedback.isCorrect 
-                ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' 
-                : 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200'
+                ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-green-200 dark:border-green-600' 
+                : 'bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30 border-red-200 dark:border-red-600'
             }`}>
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-3">
                 {feedback.isCorrect ? (
-                  <div className="p-2 bg-green-100 rounded-full">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  <div className="p-1.5 bg-green-100 dark:bg-green-800 rounded-full">
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
                 ) : (
-                  <div className="p-2 bg-red-100 rounded-full">
-                    <XCircle className="h-6 w-6 text-red-600" />
+                  <div className="p-1.5 bg-red-100 dark:bg-red-800 rounded-full">
+                    <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                 )}
-                <span className={`text-lg font-semibold ${
-                  feedback.isCorrect ? 'text-green-800' : 'text-red-800'
+                <span className={`text-base font-semibold ${
+                  feedback.isCorrect ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'
                 }`}>
                   {feedback.isCorrect ? '¡Correcto! 🎉' : 'Incorrecto 😅'}
                 </span>
               </div>
               
               {!feedback.isCorrect && (
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <span className="text-sm font-medium text-gray-600 block mb-2">Tu respuesta:</span>
+                <div className="space-y-3">
+                  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300 block mb-2">Tu respuesta:</span>
                     <div className="inline-flex flex-wrap gap-1">
                       {feedback.comparison?.map((item, index) => (
                         <span
                           key={index}
                           className={`px-2 py-1 rounded-md text-sm font-medium ${
                             item.isCorrect 
-                              ? 'bg-green-100 text-green-800 border border-green-200' 
+                              ? 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-600' 
                               : item.char.startsWith('_') 
-                                ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' 
-                                : 'bg-red-100 text-red-800 border border-red-200'
+                                ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-600' 
+                                : 'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-600'
                           }`}
                         >
                           {item.char.startsWith('_') ? item.char.slice(1, -1) : item.char}
@@ -317,9 +310,9 @@ const NumberExercise = () => {
                       ))}
                     </div>
                   </div>
-                  <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <span className="text-sm font-medium text-gray-600 block mb-2">Respuesta correcta:</span>
-                    <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300 block mb-2">Respuesta correcta:</span>
+                    <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
                       {feedback.correctAnswer}
                     </span>
                   </div>

@@ -70,10 +70,10 @@ const FlashCard = ({ card, onAnswer }: FlashCardProps) => {
             ) : (
               // Reverso de la tarjeta
               <div className="space-y-4">
-                <div className="text-2xl font-semibold text-primary mb-2">
+                <div className="text-4xl font-bold text-primary mb-2">
                   {card.word}
                 </div>
-                <div className="text-lg text-muted-foreground mb-4">
+                <div className="text-xl text-muted-foreground mb-4">
                   {card.reading}
                 </div>
                 <div className="text-xl font-medium">
@@ -121,7 +121,11 @@ const FlashCard = ({ card, onAnswer }: FlashCardProps) => {
             <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
             Pronunciar
           </Button>
-          <Button onClick={handleFlip} variant="secondary">
+          <Button 
+            onClick={handleFlip} 
+            variant="secondary"
+            size="sm"
+          >
             {isFlipped ? 'Ver palabra' : 'Ver significado'}
           </Button>
         </div>

@@ -40,7 +40,7 @@ const FSRS_CONFIG = {
 const fsrs = new FSRS(generatorParameters(FSRS_CONFIG));
 
 /**
- * Mapeo de la escala 0-10 a grades FSRS
+ * Convierte nuestra dificultad y respuesta a grade FSRS
  */
 export function difficultyToFSRSGrade(difficulty: number, wasCorrect: boolean): Grade {
   if (!wasCorrect) {
@@ -48,23 +48,38 @@ export function difficultyToFSRSGrade(difficulty: number, wasCorrect: boolean): 
     return Rating.Again as Grade;
   }
   
-  // Para respuestas correctas, mapear a Hard, Good, Easy
-  if (difficulty <= 3) return Rating.Hard as Grade;    // Correcto pero difícil
-  if (difficulty <= 7) return Rating.Good as Grade;    // Correcto normal
-  return Rating.Easy as Grade;                         // Correcto muy fácil
+  // Para respuestas correctas, clasificar basado en la dificultad actual
+  // Tarjetas más difíciles que se responden correctamente son más significativas
+  if (difficulty <= 2) return Rating.Hard as Grade;    // Correcto pero difícil (0-2)
+  if (difficulty <= 5) return Rating.Good as Grade;    // Correcto normal (3-5)
+  if (difficulty <= 8) return Rating.Good as Grade;    // Correcto bueno (6-8)
+  return Rating.Easy as Grade;                         // Correcto muy fácil (9-10)
 }
 
 /**
- * Mapeo de rating FSRS a nuestra escala 0-10
+ * Mapeo de rating FSRS a nuestra escala 0-10 con progresión más realista
  */
-export function fsrsRatingToDifficulty(rating: Rating): number {
+export function fsrsRatingToDifficulty(rating: Rating, currentDifficulty: number = 0): number {
   switch (rating) {
-    case Rating.Again: return 1;
-    case Rating.Hard: return 3;
-    case Rating.Good: return 6;
-    case Rating.Easy: return 9;
+    case Rating.Again: 
+      // Para respuestas incorrectas, reducir significativamente
+      return Math.max(0, currentDifficulty - 2);
+    
+    case Rating.Hard: 
+      // Para respuestas correctas pero difíciles, incremento pequeño
+      return Math.min(10, currentDifficulty + 0.5);
+    
+    case Rating.Good: 
+      // Para respuestas correctas normales, incremento moderado
+      return Math.min(10, currentDifficulty + 1);
+    
+    case Rating.Easy: 
+      // Para respuestas muy fáciles, incremento mayor
+      return Math.min(10, currentDifficulty + 1.5);
+    
     case Rating.Manual:
-    default: return 5;
+    default: 
+      return currentDifficulty;
   }
 }
 
@@ -135,6 +150,8 @@ export function calculateNextReviewFSRS(
   // Determinar el grade basado en la respuesta
   const grade = difficultyToFSRSGrade(card.difficulty, known);
   
+  console.log(`FSRS: Tarjeta "${card.word}" - Dificultad actual: ${card.difficulty}, Respuesta: ${known ? 'Correcta' : 'Incorrecta'}, Grade: ${grade}`);
+  
   // Calcular próxima revisión con FSRS
   const schedulingCards = fsrs.repeat(fsrsCard, reviewTime || new Date());
   const selectedCard = schedulingCards[grade];
@@ -142,7 +159,9 @@ export function calculateNextReviewFSRS(
   // Extraer datos del resultado
   const nextReviewDate = selectedCard.card.due;
   const interval = selectedCard.card.scheduled_days;
-  const newDifficulty = fsrsRatingToDifficulty(grade);
+  const newDifficulty = fsrsRatingToDifficulty(grade, card.difficulty);
+  
+  console.log(`FSRS: Nueva dificultad: ${newDifficulty}, Intervalo: ${interval} días`);
   
   // Crear datos FSRS para almacenar
   const fsrsData: FSRSData = {
@@ -379,4 +398,26 @@ export function getStudyRecommendationsFSRS(cards: Card[]): {
     difficultyFocus,
     retentionAdvice
   };
+}
+
+/**
+ * Función de utilidad para verificar el estado de las tarjetas
+ */
+export function debugCardState(cards: Card[], cardId?: string) {
+  const targetCards = cardId ? cards.filter(c => c.id === cardId) : cards;
+  
+  console.log(`=== Estado de ${targetCards.length} tarjeta(s) ===`);
+  targetCards.forEach(card => {
+    console.log(`Tarjeta: "${card.word}"`);
+    console.log(`  - ID: ${card.id}`);
+    console.log(`  - Dificultad: ${card.difficulty}`);
+    console.log(`  - Review count: ${card.reviewCount}`);
+    console.log(`  - Has been wrong: ${card.hasBeenWrong}`);
+    console.log(`  - Last reviewed: ${card.lastReviewed}`);
+    console.log(`  - Next review: ${card.nextReview}`);
+    console.log(`  - SRS interval: ${card.srsInterval || 'N/A'}`);
+    console.log(`  - Ease factor: ${card.easeFactor || 'N/A'}`);
+    console.log(`  - Repetitions: ${card.repetitions || 'N/A'}`);
+    console.log('---');
+  });
 } 

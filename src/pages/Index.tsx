@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import LoadingScreen from "@/components/LoadingScreen";
 import StudyView from "@/components/StudyView";
-import AddCardView from "@/components/AddCardView";
 import CardListView from "@/components/CardListView";
 import StudySession from "@/components/StudySession";
 import NumberExercise from "@/components/NumberExercise";
@@ -36,7 +35,7 @@ const Index = () => {
 
   const { addStudySession } = useStatistics();
 
-  const [currentView, setCurrentView] = useState<'study' | 'add' | 'list' | 'numbers' | 'kana' | 'session' | 'profile' | 'stats'>('study');
+  const [currentView, setCurrentView] = useState<'study' | 'list' | 'numbers' | 'kana' | 'session' | 'profile' | 'stats'>('study');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [currentDeckId, setCurrentDeckId] = useState<string>('');
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
@@ -163,7 +162,7 @@ const Index = () => {
   const deckStats = getDeckStats(currentDeckId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
       <Header 
         currentView={currentView}
         onViewChange={setCurrentView}
@@ -183,7 +182,7 @@ const Index = () => {
               currentDeck={currentDeck}
               deckStats={deckStats}
               onStartSession={handleStartSession}
-              onAddCard={() => setCurrentView('add')}
+              onAddCard={() => setCurrentView('list')}
               onAnswer={handleAnswer}
               onNext={nextCard}
               onPrevious={prevCard}
@@ -223,18 +222,6 @@ const Index = () => {
 
         {currentView === 'stats' && <StatsView />}
 
-        {currentView === 'add' && (
-          <AddCardView
-            decks={decks}
-            currentDeckId={currentDeckId}
-            onSelectDeck={setCurrentDeckId}
-            onCreateDeck={handleCreateDeck}
-            onAddCard={(word, reading, meaning) => 
-              addCard(word, reading, meaning, currentDeckId)
-            }
-          />
-        )}
-
         {currentView === 'list' && (
           <CardListView
             decks={decks}
@@ -246,6 +233,9 @@ const Index = () => {
             onResetProgress={() => resetProgress(currentDeckId)}
             onDeleteDeck={handleDeleteDeck}
             onImport={handleImport}
+            onAddCard={(word, reading, meaning) => 
+              addCard(word, reading, meaning, currentDeckId)
+            }
           />
         )}
       </main>

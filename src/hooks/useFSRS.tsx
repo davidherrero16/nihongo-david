@@ -179,10 +179,8 @@ export function useFSRS(cards: Card[], userId: string) {
         responseTime: actualResponseTime
       });
 
-      // Actualizar estado local si se proporciona el callback
-      if (onLocalUpdate) {
-        onLocalUpdate(card.id, known);
-      }
+      // No llamar onLocalUpdate aquí ya que la actualización ya se hizo en la base de datos
+      // El estado local se actualizará a través de la recarga de datos
 
     } catch (error) {
       console.error('Error actualizando tarjeta con FSRS:', error);

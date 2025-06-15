@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -22,8 +21,71 @@ export default {
 			screens: {
 				'xs': '475px',
 			},
+			fontFamily: {
+				'japanese': [
+					'"Noto Sans JP"',
+					'"Hiragino Kaku Gothic ProN"',
+					'"Yu Gothic"',
+					'"Meiryo"',
+					'"Takao"',
+					'"IPAexGothic"',
+					'"VL PGothic"',
+					'sans-serif'
+				],
+				'japanese-serif': [
+					'"Noto Serif JP"',
+					'"Hiragino Mincho ProN"',
+					'"Yu Mincho"',
+					'"MS PMincho"',
+					'"IPAexMincho"',
+					'serif'
+				],
+				'mono-japanese': [
+					'"Fira Code"',
+					'"Source Code Pro"',
+					'"Consolas"',
+					'"Monaco"',
+					'monospace'
+				]
+			},
+			fontSize: {
+				'xs': ['0.75rem', { lineHeight: '1.6' }],
+				'sm': ['0.875rem', { lineHeight: '1.6' }],
+				'base': ['1rem', { lineHeight: '1.7' }],
+				'lg': ['1.125rem', { lineHeight: '1.7' }],
+				'xl': ['1.25rem', { lineHeight: '1.7' }],
+				'2xl': ['1.5rem', { lineHeight: '1.6' }],
+				'3xl': ['1.875rem', { lineHeight: '1.5' }],
+				'4xl': ['2.25rem', { lineHeight: '1.4' }],
+				'5xl': ['3rem', { lineHeight: '1.2' }],
+				'6xl': ['3.75rem', { lineHeight: '1.1' }],
+				'kanji-sm': ['1rem', { lineHeight: '1.8' }],
+				'kanji-base': ['1.125rem', { lineHeight: '1.8' }],
+				'kanji-lg': ['1.25rem', { lineHeight: '1.8' }],
+				'kanji-xl': ['1.5rem', { lineHeight: '1.8' }],
+				'kanji-2xl': ['1.875rem', { lineHeight: '1.7' }],
+			},
 			colors: {
-					kin: '#D4A037', // Nuevo mostaza dorado visible
+				japanese: {
+					aka: '#DC143C',
+					beni: '#D2001F',
+					shu: '#EB6101',
+					ai: '#165E83',
+					kon: '#223A70',
+					asagi: '#33A6B8',
+					midori: '#227D51',
+					matcha: '#3E7E00',
+					murasaki: '#884898',
+					fujiro: '#A597C5',
+					chairo: '#8B4513',
+					kinari: '#F8F4E6',
+					sumi: '#1C1C1C',
+					hai: '#9E9E9E',
+					gin: '#C0C0C0',
+					sora: '#87CEEB',
+					momo: '#FFB6C1',
+					sakura: '#F5D8D9',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',

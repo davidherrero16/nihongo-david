@@ -133,6 +133,8 @@ export const cardService = {
     intervalModifier?: number;
     responseTime?: number;
   }) {
+    console.log(`Actualizando tarjeta ${cardId} - Nueva dificultad: ${difficulty}, Review count: ${reviewData.reviewCount}`);
+    
     const updateData: any = {
       difficulty,
       last_reviewed: reviewData.lastReviewed.toISOString(),
@@ -160,6 +162,8 @@ export const cardService = {
       console.error('Error updating card in database:', error);
       throw error;
     }
+    
+    console.log(`Tarjeta ${cardId} actualizada exitosamente en la base de datos`);
   },
 
   async resetSessionMarks(deckId: string, userId: string) {
