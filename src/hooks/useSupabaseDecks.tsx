@@ -80,10 +80,11 @@ export const useSupabaseDecks = () => {
 
       console.log(`Cargados ${decksData?.length || 0} mazos`);
 
-      // Cargar todas las tarjetas sin límite
-      const { data: allCards, error: cardsError } = await supabase
+      // Cargar todas las tarjetas SIN LÍMITE y con más información de debug
+      console.log('Iniciando consulta de tarjetas...');
+      const { data: allCards, error: cardsError, count } = await supabase
         .from('cards')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('user_id', user.id)
         .order('created_at', { ascending: true });
 
@@ -92,7 +93,25 @@ export const useSupabaseDecks = () => {
         throw cardsError;
       }
 
-      console.log(`Total de tarjetas cargadas: ${allCards?.length || 0}`);
+      console.log(`Total de tarjetas en la consulta: ${allCards?.length || 0}`);
+      console.log(`Conteo exacto de tarjetas en la BD: ${count}`);
+
+      // Log detallado por deck para debug
+      if (decksData && allCards) {
+        decksData.forEach(deck => {
+          const cardsForThisDeck = allCards.filter(card => card.deck_id === deck.id);
+          console.log(`Deck "${deck.name}" (ID: ${deck.id}): ${cardsForThisDeck.length} tarjetas encontradas`);
+          
+          // Si es el deck Kaishi, mostrar más detalles
+          if (deck.name.includes('Kaishi')) {
+            console.log(`Primeras 5 tarjetas del deck Kaishi:`, cardsForThisDeck.slice(0, 5).map(c => ({
+              id: c.id,
+              word: c.word,
+              deck_id: c.deck_id
+            })));
+          }
+        });
+      }
 
       // Agrupar tarjetas por deck
       const decksWithCards: Deck[] = (decksData || []).map(deck => ({
@@ -117,10 +136,31 @@ export const useSupabaseDecks = () => {
           }))
       }));
 
-      // Log del conteo de tarjetas por deck
+      // Log del conteo final de tarjetas por deck
       decksWithCards.forEach(deck => {
-        console.log(`Deck "${deck.name}": ${deck.cards.length} tarjetas`);
+        console.log(`Deck procesado "${deck.name}": ${deck.cards.length} tarjetas`);
       });
+
+      // Verificar si hay discrepancia
+      const totalCardsProcessed = decksWithCards.reduce((sum, deck) => sum + deck.cards.length, 0);
+      console.log(`Total tarjetas procesadas: ${totalCardsProcessed}`);
+      console.log(`Total tarjetas de la consulta: ${allCards?.length || 0}`);
+      
+      if (totalCardsProcessed !== (allCards?.length || 0)) {
+        console.warn('¡DISCREPANCIA DETECTADA! Hay tarjetas que no se están asignando correctamente a los decks');
+        
+        // Buscar tarjetas huérfanas
+        const assignedCardIds = new Set(decksWithCards.flatMap(deck => deck.cards.map(card => card.id)));
+        const orphanCards = (allCards || []).filter(card => !assignedCardIds.has(card.id));
+        
+        if (orphanCards.length > 0) {
+          console.error(`Tarjetas huérfanas encontradas (${orphanCards.length}):`, orphanCards.slice(0, 5).map(c => ({
+            id: c.id,
+            word: c.word,
+            deck_id: c.deck_id
+          })));
+        }
+      }
 
       setDecks(decksWithCards);
 
