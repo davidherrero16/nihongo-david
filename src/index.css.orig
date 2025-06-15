@@ -37,6 +37,7 @@
 
     --radius: 0.5rem;
 
+<<<<<<< HEAD
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -45,9 +46,20 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+=======
+    /* Sidebar con tema japonés */
+    --sidebar-background: 248 246 240;
+    --sidebar-foreground: 28 28 28;
+    --sidebar-primary: 34 58 112; /* kon - azul marino */
+    --sidebar-primary-foreground: 248 246 240;
+    --sidebar-accent: 240 238 232;
+    --sidebar-accent-foreground: 28 28 28;
+    --sidebar-border: 220 220 220;
+    --sidebar-ring: 22 94 131;
 
     /* Color amarillo (kin) más visible */
     --japanese-yellow: 212 160 55; /* Nuevo mostaza más visible (#D4A037) */
+>>>>>>> bc71240fdf87b317c7c74b2598131652ed11d567
   }
 
   .dark {
@@ -75,6 +87,7 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
+<<<<<<< HEAD
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
@@ -86,6 +99,23 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+=======
+    --border: 80 80 80;
+    --input: 60 60 60;
+    --ring: 51 166 184;
+
+    --sidebar-background: 28 28 28;
+    --sidebar-foreground: 248 246 240;
+    --sidebar-primary: 51 166 184;
+    --sidebar-primary-foreground: 28 28 28;
+    --sidebar-accent: 50 50 50;
+    --sidebar-accent-foreground: 248 246 240;
+    --sidebar-border: 80 80 80;
+    --sidebar-ring: 51 166 184;
+
+    /* Dark mode amarillo visible */
+    --japanese-yellow: 212 160 55;
+>>>>>>> bc71240fdf87b317c7c74b2598131652ed11d567
   }
 }
 
@@ -95,10 +125,48 @@
   }
 
   body {
+<<<<<<< HEAD
     @apply bg-background text-foreground;
+=======
+    @apply bg-background text-foreground font-japanese text-lg; /* Subo tamaño base */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1;
     letter-spacing: 0.01em;
+  }
+
+  /* Mejoras legibilidad para fuentes japonesas */
+  .japanese-text {
+    @apply font-japanese;
+    font-size: 1.15rem;
     letter-spacing: 0.04em;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .kanji-text {
+    @apply font-japanese-serif;
     font-size: 1.25rem;
+    font-feature-settings: "jp04" 1, "jp90" 1;
+  }
+
+  /* Mejorar legibilidad en tarjetas de estudio */
+  .flashcard-word {
+    @apply text-kanji-2xl font-japanese-serif font-medium;
+    color: hsl(var(--primary));
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .flashcard-reading {
+    @apply text-kanji-lg font-japanese font-normal;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .flashcard-meaning {
+    @apply text-lg font-japanese font-medium;
+    color: hsl(var(--foreground));
+>>>>>>> bc71240fdf87b317c7c74b2598131652ed11d567
   }
 }
 
@@ -147,6 +215,54 @@
   .delay-500 {
     animation-delay: 0.5s;
   }
+<<<<<<< HEAD
+=======
+
+  /* Utilidades para tema japonés */
+  .bg-japanese-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      rgb(248 246 240) 50%, 
+      rgb(240 238 232) 100%);
+  }
+
+  .text-japanese-primary {
+    color: rgb(22 94 131); /* ai */
+  }
+
+  .text-japanese-secondary {
+    color: rgb(136 72 152); /* murasaki */
+  }
+
+  .text-japanese-accent {
+    color: rgb(34 125 81); /* midori */
+  }
+
+  .border-japanese {
+    border-color: rgb(220 220 220);
+  }
+
+  /* Colores adicionales para el tema */
+  .bg-japanese-kinari {
+    background-color: rgb(248 246 240);
+  }
+  
+  .hover\:scale-102:hover {
+    transform: scale(1.02);
+  }
+
+  /* Sombras sutiles inspiradas en arte japonés */
+  .shadow-japanese {
+    box-shadow: 
+      0 1px 3px rgba(22, 94, 131, 0.12),
+      0 1px 2px rgba(22, 94, 131, 0.24);
+  }
+
+  .shadow-japanese-lg {
+    box-shadow: 
+      0 4px 6px rgba(22, 94, 131, 0.07),
+      0 2px 4px rgba(22, 94, 131, 0.06),
+      0 1px 2px rgba(22, 94, 131, 0.1);
   }
 
   /* Utilidad para el amarillo destacado */
@@ -155,6 +271,8 @@
   }
   .bg-japanese-yellow {
     background-color: rgb(var(--japanese-yellow));
+  }
+>>>>>>> bc71240fdf87b317c7c74b2598131652ed11d567
 }
 
 /* Keyframes para las animaciones */
