@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Sparkles } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
@@ -22,7 +21,7 @@ const WelcomeMessage = () => {
   };
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200 mb-4 sm:mb-6 w-1/2 mx-auto">
+    <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200 mb-4 sm:mb-6 w-full max-w-4xl mx-auto">
       <CardContent className="p-3 sm:p-4 lg:p-6">
         <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-2">
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">

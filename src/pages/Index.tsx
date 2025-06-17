@@ -74,6 +74,7 @@ const Index = () => {
     if (newDeckId) {
       setCurrentDeckId(newDeckId);
       setCurrentCardIndex(0);
+      setCurrentView('study');
     }
   };
 
@@ -159,7 +160,6 @@ const Index = () => {
   const reviewCards = getCardsForReview(currentDeckId);
   const currentDeck = decks.find(deck => deck.id === currentDeckId);
   const currentCards = reviewCards.length > 0 ? reviewCards : (currentDeck?.cards || []);
-  const deckStats = getDeckStats(currentDeckId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
@@ -180,7 +180,6 @@ const Index = () => {
               onCreateDeck={handleCreateDeck}
               reviewCards={reviewCards}
               currentDeck={currentDeck}
-              deckStats={deckStats}
               onStartSession={handleStartSession}
               onAddCard={() => setCurrentView('list')}
               onAnswer={handleAnswer}

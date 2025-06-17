@@ -312,7 +312,7 @@ const NumberExercise = () => {
                   </div>
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-300 block mb-2">Respuesta correcta:</span>
-                    <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+                    <span className="text-lg font-bold bg-red-500 bg-clip-text text-transparent">
                       {feedback.correctAnswer}
                     </span>
                   </div>

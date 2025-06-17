@@ -183,7 +183,7 @@ export const useSupabaseDecks = () => {
       
       toast({
         title: "Mazo creado",
-        description: `Se creó el mazo "${name}"`,
+        description: `Se creó el mazo "${name}", ve a la página de tarjetas para comenzar a añadir tarjetas`,
       });
 
       return data.id;

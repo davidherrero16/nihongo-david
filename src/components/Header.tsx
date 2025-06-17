@@ -54,14 +54,17 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
         <div className="flex items-center justify-between h-20">
           {/* Logo y título */}
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
+            <button 
+              onClick={() => onViewChange('study')}
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200"
+            >
               <div className="w-10 h-10 bg-gradient-to-br from-japanese-ai to-japanese-asagi rounded-lg flex items-center justify-center shadow-japanese">
                 <Languages className="h-6 w-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold font-japanese text-japanese-primary dark:text-white">
-                日本語学習 (Nihongo Gakushou)
+              <h1 className="text-2xl font-bold font-japanese text-japanese-primary dark:text-white hidden sm:block">
+                日本語学習
               </h1>
-            </div>
+            </button>
           </div>
 
           {/* Navegación central */}
@@ -143,56 +146,65 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
               variant={isActive('study') ? 'default' : 'ghost'}
               onClick={() => onViewChange('study')}
               size="sm"
-              className={`flex items-center gap-1 text-xs whitespace-nowrap font-japanese ${
+              className={`p-2 font-japanese ${
                 isActive('study') 
                   ? 'bg-japanese-ai text-white' 
                   : 'text-japanese-secondary dark:text-gray-300 hover:text-japanese-ai hover:bg-japanese-sakura/40 dark:hover:bg-gray-800'
               }`}
             >
-              <Brain className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Estudiar</span>
+              <Brain className="h-4 w-4" />
             </Button>
 
             <Button
               variant={isActive('list') ? 'default' : 'ghost'}
               onClick={() => onViewChange('list')}
               size="sm"
-              className={`flex items-center gap-1 text-xs whitespace-nowrap font-japanese ${
+              className={`p-2 font-japanese ${
                 isActive('list') 
                   ? 'bg-japanese-murasaki text-white' 
                   : 'text-japanese-secondary dark:text-gray-300 hover:text-japanese-murasaki hover:bg-japanese-sakura/40 dark:hover:bg-gray-800'
               }`}
             >
-              <List className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Tarjetas</span>
+              <List className="h-4 w-4" />
             </Button>
 
             <Button
               variant={isActive('numbers') ? 'default' : 'ghost'}
               onClick={() => onViewChange('numbers')}
               size="sm"
-              className={`flex items-center gap-1 text-xs whitespace-nowrap font-japanese ${
+              className={`p-2 font-japanese ${
                 isActive('numbers') 
                   ? 'bg-japanese-chairo text-white' 
                   : 'text-japanese-secondary dark:text-gray-300 hover:text-japanese-chairo hover:bg-japanese-sakura/40 dark:hover:bg-gray-800'
               }`}
             >
-              <Calculator className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Números</span>
+              <Calculator className="h-4 w-4" />
             </Button>
 
             <Button
               variant={isActive('kana') ? 'default' : 'ghost'}
               onClick={() => onViewChange('kana')}
               size="sm"
-              className={`flex items-center gap-1 text-xs whitespace-nowrap font-japanese ${
+              className={`p-2 font-japanese ${
                 isActive('kana') 
                   ? 'bg-japanese-fujiro text-white' 
                   : 'text-japanese-secondary dark:text-gray-300 hover:text-japanese-fujiro hover:bg-japanese-sakura/40 dark:hover:bg-gray-800'
               }`}
             >
-              <BookOpen className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Kana</span>
+              <BookOpen className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant={isActive('stats') ? 'default' : 'ghost'}
+              onClick={() => onViewChange('stats')}
+              size="sm"
+              className={`p-2 font-japanese ${
+                isActive('stats') 
+                  ? 'bg-japanese-asagi text-white' 
+                  : 'text-japanese-secondary dark:text-gray-300 hover:text-japanese-asagi hover:bg-japanese-sakura/40 dark:hover:bg-gray-800'
+              }`}
+            >
+              <BarChart3 className="h-4 w-4" />
             </Button>
           </div>
 
@@ -230,7 +242,7 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
                 className="w-56 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-japanese shadow-japanese-lg font-japanese"
               >
                 <DropdownMenuLabel className="text-japanese-ai dark:text-white">
-                  Mi Cuenta
+                  Mi cuenta
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-japanese/20 dark:bg-gray-600" />
                 <DropdownMenuItem 
@@ -238,7 +250,7 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
                   className="flex items-center gap-2 text-japanese-secondary dark:text-gray-300 hover:text-japanese-ai hover:bg-japanese-sakura/40 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 >
                   <User className="h-4 w-4" />
-                  Mi Perfil
+                  Mi perfil
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-japanese/20 dark:bg-gray-600" />
                 <DropdownMenuItem 
@@ -246,7 +258,7 @@ const Header = ({ currentView, onViewChange, onSignOut }: HeaderProps) => {
                   className="flex items-center gap-2 text-japanese-beni hover:text-japanese-aka hover:bg-japanese-sakura/40 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 >
                   <LogOut className="h-4 w-4" />
-                  Cerrar Sesión
+                  Cerrar sesión
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

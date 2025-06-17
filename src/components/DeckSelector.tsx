@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +45,7 @@ const DeckSelector = ({ decks, currentDeckId, onSelectDeck, onCreateDeck }: Deck
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Seleccionar grupo de tarjetas</h3>
+        <h3 className="text-lg font-medium">Seleccionar mazo</h3>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="flex items-center gap-2">
@@ -83,23 +82,23 @@ const DeckSelector = ({ decks, currentDeckId, onSelectDeck, onCreateDeck }: Deck
         </Dialog>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 w-full">
         {decks.map((deck, index) => {
           const colors = getColorForDeck(index);
           return (
             <Card 
               key={deck.id} 
-              className={`cursor-pointer transition-all hover:shadow-md ${colors.bg} ${colors.border} ${
+              className={`w-44 h-28 flex flex-col justify-center cursor-pointer transition-all hover:shadow-md ${colors.bg} ${colors.border} ${
                 currentDeckId === deck.id 
                   ? `ring-2 ${colors.ring} shadow-md` 
                   : `hover:ring-1 hover:${colors.ring}/50`
               }`}
               onClick={() => onSelectDeck(deck.id)}
             >
-              <CardContent className="p-4">
+              <CardContent className="p-4 flex flex-col justify-center h-full">
                 <div className="flex items-center gap-2 mb-2">
                   <LayoutPanelLeft className={`h-4 w-4 ${colors.icon}`} />
-                  <h4 className={`font-medium ${deck.isImported ? 'text-indigo-600' : colors.text}`}>
+                  <h4 className={`font-medium truncate max-w-[7.5rem] ${deck.isImported ? 'text-indigo-600' : colors.text}`}>
                     {deck.name}
                   </h4>
                 </div>
