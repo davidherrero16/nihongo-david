@@ -88,13 +88,14 @@ export const cardService = {
   },
 
   async deleteCard(cardId: string, userId: string, deckId: string) {
-    // Verificar que la tarjeta existe y pertenece al usuario
+    console.log(`Attempting to delete card ${cardId} for user ${userId} in deck ${deckId}`);
+    
+    // Simplificar la consulta de verificación usando solo filtros esenciales
     const { data: existingCard, error: fetchError } = await supabase
       .from('cards')
       .select('id, user_id, deck_id')
       .eq('id', cardId)
       .eq('user_id', userId)
-      .eq('deck_id', deckId)
       .single();
 
     if (fetchError) {
@@ -106,17 +107,24 @@ export const cardService = {
       throw new Error('La tarjeta no existe o no tienes permisos para eliminarla');
     }
 
+    // Verificar que la tarjeta pertenece al deck correcto
+    if (existingCard.deck_id !== deckId) {
+      throw new Error('La tarjeta no pertenece al deck especificado');
+    }
+
+    // Simplificar la consulta de eliminación
     const { error: deleteError } = await supabase
       .from('cards')
       .delete()
       .eq('id', cardId)
-      .eq('user_id', userId)
-      .eq('deck_id', deckId);
+      .eq('user_id', userId);
 
     if (deleteError) {
       console.error('Error deleting card:', deleteError);
       throw new Error(`Error eliminando la tarjeta: ${deleteError.message}`);
     }
+    
+    console.log(`Card ${cardId} deleted successfully`);
   },
 
   async updateCardDifficulty(cardId: string, userId: string, difficulty: number, reviewData: {
@@ -133,7 +141,7 @@ export const cardService = {
     intervalModifier?: number;
     responseTime?: number;
   }) {
-    console.log(`Actualizando tarjeta ${cardId} - Nueva dificultad: ${difficulty}, Review count: ${reviewData.reviewCount}`);
+    console.log(`[cardService] Actualizando tarjeta ${cardId} para usuario ${userId} - Nueva dificultad: ${difficulty}, Review count: ${reviewData.reviewCount}`);
     
     const updateData: any = {
       difficulty,

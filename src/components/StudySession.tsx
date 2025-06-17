@@ -180,9 +180,18 @@ const StudySession = ({ cards, packSize, onComplete, onUpdateCard, studyMode, de
         
         // Solo llamar onUpdateCard si no se pudo actualizar con FSRS
         // y la tarjeta no ha sido procesada antes
-        if (!processedCards.has(currentCard.id)) {
-          onUpdateCard(currentCard.id, known);
-        }
+        // Temporalmente comentado para evitar dobles actualizaciones
+        // if (!processedCards.has(currentCard.id)) {
+        //   onUpdateCard(currentCard.id, known);
+        // }
+        
+        // Agregar resultado a sessionResults para estadísticas incluso en caso de error FSRS
+        const fallbackResult: SessionResult = {
+          cardId: currentCard.id,
+          known,
+          card: currentCard
+        };
+        setSessionResults(prev => [...prev, fallbackResult]);
         
         // Manejar lógica de sesión localmente
         if (known) {

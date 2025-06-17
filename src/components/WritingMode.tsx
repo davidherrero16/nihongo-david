@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, Eye, ArrowLeft, ArrowRight, Volume2 } from "lucide-react";
-import type { Card as CardType } from "@/hooks/useCards";
+import type { Card as CardType } from "@/types/deck";
 import { useSpeech } from "@/hooks/useSpeech";
 
 interface WritingModeProps {

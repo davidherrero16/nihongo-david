@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, Volume2 } from "lucide-react";
-import type { Card as CardType } from "@/hooks/useCards";
+import type { Card as CardType } from "@/types/deck";
 import { useSpeech } from "@/hooks/useSpeech";
 
 interface FlashCardProps {
@@ -39,7 +39,19 @@ const FlashCard = ({ card, onAnswer }: FlashCardProps) => {
           onClick={handleFlip}
         >
           <CardContent className="p-8 flex flex-col items-center justify-center h-[350px] text-center relative">
-
+            {/* Speaker button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSpeak();
+              }}
+              disabled={isSpeaking}
+            >
+              <Volume2 className={`h-4 w-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
+            </Button>
 
             {!isFlipped ? (
               // Frente de la tarjeta

@@ -46,7 +46,7 @@ const StudyView = ({
   packSize,
   onPackSizeChange
 }: StudyViewProps) => {
-  const [customPackSize, setCustomPackSize] = useState<number>(packSize);
+  const [customPackSize, setCustomPackSize] = useState<number | string>(packSize);
   const { user } = useAuth();
   
   // Sincronizar customPackSize con packSize cuando cambie externamente
@@ -143,9 +143,29 @@ const StudyView = ({
                     max="50"
                     value={customPackSize}
                     onChange={(e) => {
-                      const value = parseInt(e.target.value) || 10;
-                      setCustomPackSize(Math.min(Math.max(value, 1), 50));
-                      onPackSizeChange(value);
+                      const inputValue = e.target.value;
+                      
+                      // Si el campo está vacío, permitir que esté vacío temporalmente
+                      if (inputValue === '') {
+                        setCustomPackSize('');
+                        return;
+                      }
+                      
+                      const numericValue = parseInt(inputValue);
+                      
+                      // Solo actualizar si es un número válido
+                      if (!isNaN(numericValue)) {
+                        const clampedValue = Math.min(Math.max(numericValue, 1), 50);
+                        setCustomPackSize(clampedValue);
+                        onPackSizeChange(clampedValue);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Si el campo está vacío al perder el foco, usar valor por defecto
+                      if (e.target.value === '' || isNaN(parseInt(e.target.value))) {
+                        setCustomPackSize(10);
+                        onPackSizeChange(10);
+                      }
                     }}
                     className="w-20 px-3 py-2 text-center border-2 border-blue-200 dark:border-blue-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white/80 dark:bg-gray-800/80 text-gray-900 dark:text-white font-semibold shadow-sm ml-2"
                   />
@@ -156,7 +176,7 @@ const StudyView = ({
                 <div className="inline-flex items-center gap-2 px-4 py-3 bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
                   <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                    No hay tarjetas disponibles. Por favor, añade o importa algunas tarjetas para comenzar el estudio.
+                    No hay tarjetas disponibles. Por favor, añade tarjetas o importa un mazo para comenzar el estudio.
                   </span>
                 </div>
               </div>
