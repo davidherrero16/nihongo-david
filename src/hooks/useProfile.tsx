@@ -9,6 +9,9 @@ interface Profile {
   display_name: string | null;
   created_at: string;
   updated_at: string;
+  onboarding_completed: boolean | null;
+  onboarding_completed_at: string | null;
+  user_level: number | null;
 }
 
 export const useProfile = () => {
@@ -139,9 +142,52 @@ export const useProfile = () => {
     }
   };
 
+  const completeOnboarding = async (display_name: string, user_level: number) => {
+    if (!user) return false;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ 
+          display_name,
+          user_level,
+          onboarding_completed: true,
+          onboarding_completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setProfile(data);
+      toast({
+        title: "¡Bienvenido!",
+        description: "Tu perfil se ha configurado correctamente",
+      });
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error completing onboarding:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo completar la configuración inicial",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const hasCompletedOnboarding = () => {
+    return profile?.onboarding_completed === true;
+  };
+
   return {
     profile,
     loading,
-    updateProfile
+    updateProfile,
+    completeOnboarding,
+    hasCompletedOnboarding
   };
 };

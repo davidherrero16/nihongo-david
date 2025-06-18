@@ -112,19 +112,28 @@ export type Database = {
           created_at: string | null
           display_name: string | null
           id: string
+          onboarding_completed: boolean | null
+          onboarding_completed_at: string | null
           updated_at: string | null
+          user_level: number | null
         }
         Insert: {
           created_at?: string | null
           display_name?: string | null
           id: string
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
           updated_at?: string | null
+          user_level?: number | null
         }
         Update: {
           created_at?: string | null
           display_name?: string | null
           id?: string
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
           updated_at?: string | null
+          user_level?: number | null
         }
         Relationships: []
       }
